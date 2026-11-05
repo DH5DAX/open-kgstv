@@ -1,0 +1,52 @@
+[
+  {
+    "filename": "KG-STV_.10_scale.mp3",
+    "url": "https://www.sigidwiki.com/images/4/43/KG-STV_.10_scale.mp3",
+    "sha256": "6ff1f4496c12e9797e02723cc7229bbb358a162f6e5ed961135c84c9ba180521"
+  },
+  {
+    "filename": "KG-STV_.50_scale.mp3",
+    "url": "https://www.sigidwiki.com/images/1/17/KG-STV_.50_scale.mp3",
+    "sha256": "c7fcd1504d549a4d69dc9635938f8628e6fb34514df4fd0d0762bfcec75ca56a"
+  },
+  {
+    "filename": "KG-STV_4L-FSK_text.mp3",
+    "url": "https://www.sigidwiki.com/images/5/52/KG-STV_4L-FSK_text.mp3",
+    "sha256": "aa79e18f41f1172d88648f863e759c8fba530772f921a562fb314ace57f492f7"
+  },
+  {
+    "filename": "KG-STV_4LFSK_Convolution.mp3",
+    "url": "https://www.sigidwiki.com/images/b/b9/KG-STV_4LFSK_Convolution.mp3",
+    "sha256": "17d7ff89155a0fbcdf1fe08ba10ac8101c09606db7fa638a436c2771dad538e7"
+  },
+  {
+    "filename": "KG-STV_4LFSK_Norm.mp3",
+    "url": "https://www.sigidwiki.com/images/0/03/KG-STV_4LFSK_Norm.mp3",
+    "sha256": "6f65c15ba9065df2e0c781bbe9b3c19d890079cdc77985b96140e58b445613e7"
+  },
+  {
+    "filename": "KG-STV_MSK_Convolution.mp3",
+    "url": "https://www.sigidwiki.com/images/4/4f/KG-STV_MSK_Convolution.mp3",
+    "sha256": "a1cd620a7f6bcff7e5e41a8c239d3656c3fd44107f86f98804f346a72efcf6db"
+  },
+  {
+    "filename": "KG-STV_MSK_Norm.mp3",
+    "url": "https://www.sigidwiki.com/images/e/e5/KG-STV_MSK_Norm.mp3",
+    "sha256": "ebde49193c6cedaade13cc324cc6ae935b55688ec926db27ee6cb279ea4c7dd0"
+  },
+  {
+    "filename": "KG-STV_MSK_text.mp3",
+    "url": "https://www.sigidwiki.com/images/5/58/KG-STV_MSK_text.mp3",
+    "sha256": "542c58d0c9d29761637193d37e817f51341e83887eac356406f8338f7098a5f9"
+  },
+  {
+    "filename": "reference-scale-1.png",
+    "url": "https://www.sigidwiki.com/images/5/5f/1.0_scale.png",
+    "sha256": "261206b4d2b5abad71083c57f15d8df2c2667feaee001786ed693998e7d59d24"
+  },
+  {
+    "filename": "reference-scale-05.png",
+    "url": "https://www.sigidwiki.com/images/c/cc/.5scale.png",
+    "sha256": "afb42abce8ce372a27f51ac11b2adc5ddf519506e7c87d244bc0fa025d992d4e"
+  }
+]

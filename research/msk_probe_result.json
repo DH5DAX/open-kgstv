@@ -1,0 +1,33 @@
+{
+  "sample_url": "https://www.sigidwiki.com/images/5/58/KG-STV_MSK_text.mp3",
+  "sample_sha256": "542c58d0c9d29761637193d37e817f51341e83887eac356406f8338f7098a5f9",
+  "resampled_rate_hz": 48000,
+  "duration_seconds": 2.2639583333333335,
+  "sync_length": 63,
+  "whitening_length": 127,
+  "conv_register": "left shift; newest bit at LSB; masks octal 155,117 (reversed 133,171)",
+  "crc_valid_timing_candidates": 33,
+  "best": {
+    "offset": 4,
+    "sync_sample": 11604,
+    "sync_bit_errors": 0,
+    "preamble_bit_errors": 0,
+    "header": {
+      "sys": 0,
+      "com": 0,
+      "c": 0,
+      "m": 0,
+      "x": 0,
+      "y": 0,
+      "sc": 10,
+      "size": 480
+    },
+    "header_viterbi_metric": 0,
+    "header_crc": "6702",
+    "data_crc": "a2d1",
+    "data_crc_valid": true,
+    "payload_hex": "54455354333e54686520517569636b2042726f776e20466f78204a756d7073204f76657220546865204c617a7920446f672030313233343536373839",
+    "decoded_text": "TEST3>The Quick Brown Fox Jumps Over The Lazy Dog 0123456789"
+  },
+  "scope": "One public MSK/NORM text sample; no general compatibility claim"
+}

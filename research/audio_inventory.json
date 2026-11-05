@@ -1,0 +1,66 @@
+[
+  {
+    "file": "reference\\KG-STV_.10_scale.mp3",
+    "bytes": 799371,
+    "sha256": "6ff1f4496c12e9797e02723cc7229bbb358a162f6e5ed961135c84c9ba180521",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 174.8346485260771
+  },
+  {
+    "file": "reference\\KG-STV_.50_scale.mp3",
+    "bytes": 533471,
+    "sha256": "c7fcd1504d549a4d69dc9635938f8628e6fb34514df4fd0d0762bfcec75ca56a",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 116.49451247165533
+  },
+  {
+    "file": "reference\\KG-STV_4L-FSK_text.mp3",
+    "bytes": 9543,
+    "sha256": "aa79e18f41f1172d88648f863e759c8fba530772f921a562fb314ace57f492f7",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 2.136235827664399
+  },
+  {
+    "file": "reference\\KG-STV_4LFSK_Convolution.mp3",
+    "bytes": 600263,
+    "sha256": "17d7ff89155a0fbcdf1fe08ba10ac8101c09606db7fa638a436c2771dad538e7",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 150.5581859410431
+  },
+  {
+    "file": "reference\\KG-STV_4LFSK_Norm.mp3",
+    "bytes": 398002,
+    "sha256": "6f65c15ba9065df2e0c781bbe9b3c19d890079cdc77985b96140e58b445613e7",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 99.5005
+  },
+  {
+    "file": "reference\\KG-STV_MSK_Convolution.mp3",
+    "bytes": 989327,
+    "sha256": "a1cd620a7f6bcff7e5e41a8c239d3656c3fd44107f86f98804f346a72efcf6db",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 248.23292517006803
+  },
+  {
+    "file": "reference\\KG-STV_MSK_Norm.mp3",
+    "bytes": 593789,
+    "sha256": "ebde49193c6cedaade13cc324cc6ae935b55688ec926db27ee6cb279ea4c7dd0",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 148.8863492063492
+  },
+  {
+    "file": "reference\\KG-STV_MSK_text.mp3",
+    "bytes": 10089,
+    "sha256": "542c58d0c9d29761637193d37e817f51341e83887eac356406f8338f7098a5f9",
+    "sample_rate": 44100,
+    "channels": 1,
+    "duration_seconds": 2.2639455782312927
+  }
+]

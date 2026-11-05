@@ -1,0 +1,215 @@
+{
+  "retrieved_date": "2026-11-05",
+  "files": [
+    {
+      "path": "reference/github-kgstv.json",
+      "bytes": 21024,
+      "sha256": "9f5a772017647ccce1cdf17ef134c00b71511f5c99e8e9791bfd1828961de6bc"
+    },
+    {
+      "path": "reference/iss/kgstv/kgstv.exe",
+      "bytes": 1024512,
+      "sha256": "4e1d3d121c7259410364863d4a31d94e27be186c733e4a2005255c1ee963b116"
+    },
+    {
+      "path": "reference/iss/kgstv/kgstv.ini",
+      "bytes": 478,
+      "sha256": "a51b96de78b7ee4bf811403445442cf330587befdfb262835f6b6f7d3286c02e"
+    },
+    {
+      "path": "reference/iss/kgstv/manual/Install_Setup.pdf",
+      "bytes": 247540,
+      "sha256": "a4f35f567519facd191700f7773e81e0667c9915286ae4f741299cafa08e6681"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/bee.jpg",
+      "bytes": 15496,
+      "sha256": "05aed80dab2a0cf4451c8d3cf9eea02c41b15dcd8461505f805de9e38c31f2bf"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/Butterfly.jpg",
+      "bytes": 12566,
+      "sha256": "1813ec6ad7bef38f9a7774ec9b417ea60fffd612cf6f49c209006a409691b124"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/EBU_Bars.jpg",
+      "bytes": 3329,
+      "sha256": "9442172fc00cc95408d2f53ec6378397c6412a88dc1ad1752cd245d484d02b89"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/image03.jpg",
+      "bytes": 89543,
+      "sha256": "b05a4e31909c008223ce9e83d88f1413fc235ba3c34d466cc65d91bc256a75ff"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/ISS_Medium.jpg",
+      "bytes": 155857,
+      "sha256": "04c1e99099dac46e4cb91e4cb2c67d6e02c5a943018d6b6c611ea483e600a321"
+    },
+    {
+      "path": "reference/iss/kgstv/pictures/ISS_Test.jpg",
+      "bytes": 26884,
+      "sha256": "1b3279d68b96e56052dffbdb8705a9032d30215739e5c76121e2370802578fd3"
+    },
+    {
+      "path": "reference/iss/kgstv/testSound/KG-STV_4L-FSK_text.mp3",
+      "bytes": 9543,
+      "sha256": "aa79e18f41f1172d88648f863e759c8fba530772f921a562fb314ace57f492f7"
+    },
+    {
+      "path": "reference/iss/kgstv/testSound/KG-STV_4LFSK_Norm.mp3",
+      "bytes": 398002,
+      "sha256": "6f65c15ba9065df2e0c781bbe9b3c19d890079cdc77985b96140e58b445613e7"
+    },
+    {
+      "path": "reference/KG-STV_.10_scale.mp3",
+      "bytes": 799371,
+      "sha256": "6ff1f4496c12e9797e02723cc7229bbb358a162f6e5ed961135c84c9ba180521"
+    },
+    {
+      "path": "reference/KG-STV_.50_scale.mp3",
+      "bytes": 533471,
+      "sha256": "c7fcd1504d549a4d69dc9635938f8628e6fb34514df4fd0d0762bfcec75ca56a"
+    },
+    {
+      "path": "reference/KG-STV_4L-FSK_text.mp3",
+      "bytes": 9543,
+      "sha256": "aa79e18f41f1172d88648f863e759c8fba530772f921a562fb314ace57f492f7"
+    },
+    {
+      "path": "reference/KG-STV_4LFSK_Convolution.mp3",
+      "bytes": 600263,
+      "sha256": "17d7ff89155a0fbcdf1fe08ba10ac8101c09606db7fa638a436c2771dad538e7"
+    },
+    {
+      "path": "reference/KG-STV_4LFSK_Norm.mp3",
+      "bytes": 398002,
+      "sha256": "6f65c15ba9065df2e0c781bbe9b3c19d890079cdc77985b96140e58b445613e7"
+    },
+    {
+      "path": "reference/KG-STV_MSK_Convolution.mp3",
+      "bytes": 989327,
+      "sha256": "a1cd620a7f6bcff7e5e41a8c239d3656c3fd44107f86f98804f346a72efcf6db"
+    },
+    {
+      "path": "reference/KG-STV_MSK_Norm.mp3",
+      "bytes": 593789,
+      "sha256": "ebde49193c6cedaade13cc324cc6ae935b55688ec926db27ee6cb279ea4c7dd0"
+    },
+    {
+      "path": "reference/KG-STV_MSK_text.mp3",
+      "bytes": 10089,
+      "sha256": "542c58d0c9d29761637193d37e817f51341e83887eac356406f8338f7098a5f9"
+    },
+    {
+      "path": "reference/kgstv-original-mirror.zip",
+      "bytes": 1774275,
+      "sha256": "7bcc7f64a10b3faa4d9aab064f07bed55d64210e5a7fbdff6bb65d13f4a2752a"
+    },
+    {
+      "path": "reference/kgstv-readme-en.pdf",
+      "bytes": 51495,
+      "sha256": "d2ab12f0fdbfaaeaa76928e37e927a7d0470089c237ee9a5ed9c1cb4a13b7f69"
+    },
+    {
+      "path": "reference/kgstv-readme-en.txt",
+      "bytes": 114,
+      "sha256": "6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023"
+    },
+    {
+      "path": "reference/kgstv_ISS.zip",
+      "bytes": 1370811,
+      "sha256": "7eb2d6585f3fccac5fbbabb25a5f69bfa2756b6905a1d93d11a75ad4c3be7dda"
+    },
+    {
+      "path": "reference/original/kgstv.zip",
+      "bytes": 510808,
+      "sha256": "b6691db862f0e925dc110a1ace193eee26edf3ccae694e850426ceb5846250ce"
+    },
+    {
+      "path": "reference/original/readme.txt",
+      "bytes": 17086,
+      "sha256": "37d9230b9ef4b91d82b38367f20bedb1371dccbd31e5da4dc141784f72e19ab1"
+    },
+    {
+      "path": "reference/original/readme.txt.utf8.txt",
+      "bytes": 24232,
+      "sha256": "71c70daad11f03f1d794f1a54631df72e1208bc47cefae1357736f65d9481815"
+    },
+    {
+      "path": "reference/original/readme2.txt",
+      "bytes": 12151,
+      "sha256": "a24d3f4aa04c6d23f205e2c8a8dbddfc06233ac1d3bfd53fc4abd0b71144e004"
+    },
+    {
+      "path": "reference/original/readme2.txt.utf8.txt",
+      "bytes": 17302,
+      "sha256": "99b4fe3de9a7a0ae39a2ad1c8edda2659d311ad5a57376be8acf97ab072ca589"
+    },
+    {
+      "path": "reference/original/readme3.txt",
+      "bytes": 8423,
+      "sha256": "fb1b0e3fbe39c3961ccf6e4aaa0622b5e4b02af767ee2237d332d417c1d42a1a"
+    },
+    {
+      "path": "reference/original/readme3.txt.utf8.txt",
+      "bytes": 11930,
+      "sha256": "f57147cc125f58eb9bdcc23cbd3f3649b6a88b4d480219c86a646f4f3752c640"
+    },
+    {
+      "path": "reference/py4zbz.html",
+      "bytes": 15349,
+      "sha256": "d1b41b6b826e3f95ef19663ff294e708448889c2c061af26cad4d4b0bde63c15"
+    },
+    {
+      "path": "reference/sigidwiki.html",
+      "bytes": 35780,
+      "sha256": "613f3466ed7c543300d6f5a57808a8c8849712a20169384e28846f49279b0e68"
+    },
+    {
+      "path": "reference/upstream-Cargo.toml",
+      "bytes": 92,
+      "sha256": "4c59bbd3d5d897f4c45beae61f9967ac65808530af5c4ecef56176e83ba7f721"
+    },
+    {
+      "path": "reference/upstream-commit.json",
+      "bytes": 8161,
+      "sha256": "5970c9a4be98fa7b8dd576fb4d9021bf9ae5cb3c221ad87575ea7760478e12a6"
+    },
+    {
+      "path": "reference/upstream-core-Cargo.toml",
+      "bytes": 251,
+      "sha256": "7633a03e886fd6a702562f81b28ca9e1c7b0a2d3daf467ba9dee687238783fd9"
+    },
+    {
+      "path": "reference/upstream-gui-Cargo.toml",
+      "bytes": 414,
+      "sha256": "47d0ee1146f9ab3b459a8b10fb0bd925e6c5a8c64fca0752cc997c56bd855196"
+    },
+    {
+      "path": "reference/upstream-modem-Cargo.toml",
+      "bytes": 292,
+      "sha256": "54a33b33e404c59248e1e8c27a4c3aba7aad8233621a3cd2c54d6c31ee7fd0ca"
+    },
+    {
+      "path": "reference/upstream-overview.md",
+      "bytes": 11627,
+      "sha256": "e8ceb17b0b4dbdcba06becfd3df487abbe0eb53e7b7f3d86883ad00e2f86972a"
+    },
+    {
+      "path": "reference/upstream-protocol.md",
+      "bytes": 40861,
+      "sha256": "a3cf81630d26eb5676271094e6f97bb9217d089a0496cbd6de8476ea1ea75ff7"
+    },
+    {
+      "path": "reference/upstream-repo.json",
+      "bytes": 5645,
+      "sha256": "3ee4d1bcbe2fc35cd7c1b26dc1a6027583b4a6432d85636339d762128b6eebcb"
+    },
+    {
+      "path": "reference/upstream-tree.json",
+      "bytes": 26899,
+      "sha256": "5281df6ccf4d9e96659c17b7cdc98f7f3878fe7f377d6c1fcbe2cb0d3fe6c515"
+    }
+  ]
+}

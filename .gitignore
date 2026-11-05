@@ -1,0 +1,8 @@
+# Downloaded third-party research material is local reference data.
+research/reference/
+__pycache__/
+outputs/
+*.egg-info/
+.venv/
+build/
+dist/
