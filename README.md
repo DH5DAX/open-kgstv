@@ -19,10 +19,14 @@ hardware tests are still pending.
 - Experimental block repair requests and responses (BSR).
 - A Tk desktop interface with image previews, received text, live audio input,
   explicit audio playback and optional serial RTS/DTR PTT.
+- English/German interface switching without restarting, with a remembered
+  language preference and a dark HamRig-inspired design.
 - JSON reception reports with packet details, errors and missing image blocks.
 
-The desktop interface currently uses German labels. The control guide below
-explains the main actions in English.
+English is the default interface language. Use **EN / DE** at the top right to
+switch immediately. Images, message drafts, device selections and an active
+operation remain intact. **Images & messages** contains the operating controls;
+**Audio & PTT** contains soundcard, receive offset and serial PTT settings.
 
 ## Screenshots
 
@@ -51,6 +55,10 @@ Three MSK messages decoded into the receive log.
 
 See [screenshot reproduction notes](docs/screenshots/README.md) for the demo scenes.
 
+The same interface in German, after switching without restarting:
+
+![German interface with the received image preserved](docs/screenshots/interface-de.jpg)
+
 ## Install and run
 
 Requires **Python 3.11 or newer**; tested locally with Python 3.13. Tk must be
@@ -71,22 +79,30 @@ installed. For WAV-only command-line use, `python -m pip install -e .` is enough
 
 | Label in the application | Action |
 |---|---|
-| Rufzeichen | Your callsign |
-| Bild öffnen… | Open an image for transmission |
-| Als WAV… / Text als WAV… | Save image or text transmission as a WAV file |
-| Aufnahme öffnen… | Decode an audio recording |
-| Bild speichern… | Save the received image |
-| Geräte laden | List available audio devices |
-| Empfangen | Start reception from the selected input |
-| Bild senden / Text senden | Play the transmission on the selected output |
-| Stopp | Stop the current operation |
-| Fehlerkorrektur | Enable convolutional error correction |
-| RX-Versatz (Hz) | Correct a known receive frequency offset |
-| PTT-Port (leer = aus) | Serial PTT port; leave blank to disable PTT |
+| Callsign | Your callsign |
+| Open image… | Open an image for transmission |
+| Save WAV… / Text to WAV… | Save image or text transmission as a WAV file |
+| Open recording… | Decode an audio recording |
+| Save image… | Save the received image |
+| Audio & PTT → Refresh devices | List available audio devices |
+| Start receiving | Start reception from the selected input |
+| Send image / Send text | Play the transmission on the selected output |
+| Stop | Stop the current operation |
+| Error correction | Enable convolutional error correction |
+| Receive offset (Hz) | Correct a known receive frequency offset |
+| Serial port | Serial PTT port; leave blank to disable PTT |
+| EN / DE | Switch and remember the interface language |
 
 The application opens no audio devices at startup. Stop reception before
 transmitting. Clicking a send button plays audio and activates the configured
 PTT line, if any.
+
+The language preference is stored in `OpenKGSTV/settings.json` under `%APPDATA%`
+on Windows, `~/Library/Application Support` on macOS, or `$XDG_CONFIG_HOME`
+(default `~/.config`) on Linux. No callsign, messages or device settings are
+written to that file. The design follows the charcoal panels, crimson transmit
+actions and restrained status colors of HamRig Portal and HamRig Rotor; it does
+not require either application or bundle their assets.
 
 ## Command line
 
@@ -140,7 +156,8 @@ behavior has not yet been validated against the running original application.
 | BSR and all compression scales against the original | Pending |
 | Live audio and PTT on radio hardware | Implemented, not hardware-tested |
 
-31 automated tests passed locally on November 5, 2026. The original recordings
+39 automated tests passed locally on November 6, 2026, including language
+switching, preference persistence and GUI WAV export. The original recordings
 are a small, clean sample set; they do not establish receiver performance under
 fading, multipath, clipping, clock drift or Doppler. Automatic AFC, a waterfall,
 Windows INI compatibility and original image-processor IPC are not implemented.
@@ -157,6 +174,7 @@ python -m unittest discover -v
 The explicit fixture download retrieves public audio/image test data and checks
 their SHA-256 hashes. Original-recording tests are reported as skipped when the
 recordings are absent. Install the `audio` extra to decode the MP3 fixtures.
+Desktop tests require Tk and a display; they are skipped in headless environments.
 
 Downloaded third-party material under `research/reference/` is ignored by Git
 and excluded from the Python package.
@@ -172,6 +190,7 @@ and excluded from the Python package.
 | `audio.py` | Offline WAV/MP3 handling and sample-rate conversion |
 | `live.py` | Optional soundcard and serial PTT support |
 | `cli.py`, `gui.py` | Command-line and desktop interfaces |
+| `i18n.py`, `theme.py` | English/German translations, preferences and HamRig-inspired Tk styling |
 
 ## Sources and licensing
 

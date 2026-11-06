@@ -16,6 +16,8 @@ nicht**; die einzelnen Nachweise stehen in [COMPATIBILITY.md](COMPATIBILITY.md).
 - Experimentelle BSR-Anfragen, Antworten und Bildreparatur.
 - Tk-Oberfläche mit Bildvorschau, Textprotokoll, Live-Empfang und optionalem
   seriellen RTS-/DTR-PTT. Kein Senden beim Start.
+- Deutsch/Englisch direkt umschaltbar, mit gespeicherter Sprachauswahl und
+  dunkler Gestaltung nach dem Vorbild von HamRig Portal und HamRig Rotor.
 - Empfangsberichte mit Paketdaten, Fehlerstatus und fehlenden Bildblöcken.
 
 Sechs öffentlich verfügbare Original-Bildaufnahmen werden mit je **300/300
@@ -44,6 +46,10 @@ Der Empfänger zeigt 276/300 Blöcke und bietet eine experimentelle BSR-Anfrage 
 
 ![Empfangene Textnachrichten](docs/screenshots/text-reception.jpg)
 
+**Deutsche Oberfläche:** Umschalten über **DE** oben rechts, ohne Neustart.
+
+![Deutsche Oberfläche mit erhaltenem Empfangsbild](docs/screenshots/interface-de.jpg)
+
 ## Installation und Start
 
 Python 3.11 oder neuer; lokal geprüft mit Python 3.13. Tk muss installiert sein
@@ -57,8 +63,18 @@ python -m kgstv gui
 Unter Windows kann mit vorhandenem Python 3.13 auch `start-gui.cmd` verwendet
 werden. Für die reine WAV-Kommandozeile reicht `pip install -e .`.
 
-Die Oberfläche öffnet beim Start keine Audiogeräte. „Geräte laden“ listet
-Eingänge und Ausgänge. „Empfangen“ startet den ausgewählten Eingang. Vor dem
+Die Oberfläche startet standardmäßig auf Englisch. **EN / DE** oben rechts
+wechselt die Sprache sofort, auch während eines laufenden Vorgangs. Bilder,
+Texteingaben und Geräteeinstellungen bleiben erhalten. Die Sprachauswahl wird
+für den nächsten Start gespeichert: unter Windows in
+`%APPDATA%/OpenKGSTV/settings.json`, unter macOS in
+`~/Library/Application Support/OpenKGSTV/settings.json`, unter Linux in
+`$XDG_CONFIG_HOME/OpenKGSTV/settings.json` (Standard: `~/.config`).
+
+„Bilder & Nachrichten“ enthält die Bedienelemente für Bild- und Textfunk,
+„Audio & PTT“ die Soundkarten-, Frequenzversatz- und PTT-Einstellungen.
+Die Oberfläche öffnet beim Start keine Audiogeräte. „Geräte aktualisieren“ listet
+Eingänge und Ausgänge. „Empfang starten“ startet den ausgewählten Eingang. Vor dem
 Senden einen laufenden Empfang stoppen. „Bild senden“ und „Text senden“ geben
 Audio auf dem gewählten Ausgang aus; ein eingetragener PTT-Port wird dabei
 aktiviert. Ein leerer PTT-Port bedeutet: keine serielle Steuerung.
@@ -109,6 +125,8 @@ Der Download ist ausdrücklich, hashgeprüft und umfasst nur öffentliche
 Audio-/Bild-Testdaten. Ohne die Aufnahmen werden die Originalsignal-Tests als
 übersprungen gemeldet. Die Fremddateien unter `research/reference/` sind
 gitignoriert und werden nicht im Python-Paket ausgeliefert.
+Am 6. November 2026 bestanden lokal alle 39 Tests. Die Oberflächentests benötigen
+Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 
 ## Aufbau
 
@@ -121,6 +139,7 @@ gitignoriert und werden nicht im Python-Paket ausgeliefert.
 | `audio.py` | Offline-Audio, WAV/MP3 und Abtastratenkonvertierung |
 | `live.py` | Optionale Soundkarte und PTT mit Freigabe im Fehlerfall |
 | `cli.py`, `gui.py` | Kommandozeile und Desktop-Oberfläche |
+| `i18n.py`, `theme.py` | Übersetzungen, Sprachauswahl und Tk-Gestaltung im HamRig-Stil |
 
 ## Herkunft
 

@@ -48,7 +48,7 @@ class LiveReceiver:
             receiver = Receiver(frequency_offset=self.frequency_offset)
             with sd.InputStream(samplerate=12000, blocksize=1200, channels=1,
                                 dtype="float32", device=self.device, callback=capture):
-                self.callback("status", "Empfang läuft")
+                self.callback("status", "live_receiving")
                 while not self.stopped.is_set():
                     try:
                         part, gap = packets.get(timeout=0.2)
@@ -58,7 +58,7 @@ class LiveReceiver:
                         # Never concatenate across a known missing audio interval.
                         buffer = np.empty(0)
                         since = 0
-                        self.callback("status", "Audioaussetzer – Synchronisation wird neu gesucht")
+                        self.callback("status", "audio_gap")
                     buffer = np.concatenate((buffer, part))[-20*12000:]
                     total += len(part); since += len(part)
                     if since < 2*12000:
@@ -79,7 +79,7 @@ class LiveReceiver:
                         session.accept(frame)
                         last_sample = absolute
                         self.callback("frame", (frame, session))
-            self.callback("status", "Empfang angehalten")
+            self.callback("status", "live_stopped")
         except Exception as exc:
             self.callback("error", str(exc))
         finally:

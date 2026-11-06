@@ -45,12 +45,13 @@ def test_card():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("scene", choices=("image", "missing", "text"))
+    parser.add_argument("--language", choices=("en", "de"), default="en")
     args = parser.parse_args()
     output = ROOT/"outputs"/"screenshots"
     output.mkdir(parents=True, exist_ok=True)
 
     root = tk.Tk()
-    app = Application(root)
+    app = Application(root, settings_path=output/"settings.json", language=args.language)
     root.title(f"Open KG-STV | Documentation: {args.scene}")
     app.callsign.set("TEST")
     if args.scene != "text":
@@ -58,7 +59,6 @@ def main():
         app.fec.set(True)
         app.tx_image = test_card()
         app._show(app.tx_preview, app.tx_image)
-        root.geometry("1000x850")
     app.message.insert(0, "CQ CQ de TEST - open-source digital SSTV")
     details = {}
 
@@ -90,18 +90,16 @@ def main():
             expected = ["TEST>"+message for message in messages]
             if session.messages != expected:
                 raise RuntimeError("Text loopback did not decode all messages")
-            status = "Demo: MSK-Textempfang aus erzeugten Audiodaten · 3 Nachrichten · CRC gültig"
+            app._post_status("demo_text", count=3)
         else:
             good = int(session.current_image.good.sum())
             if good != (276 if args.scene == "missing" else 300):
                 raise RuntimeError(f"Unexpected image block count: {good}")
-            status = f"Demo: eigener WAV-Sende-/Empfangstest · {good}/300 Bildblöcke"
             if args.scene == "missing":
-                status += " · 24 Blöcke absichtlich ausgelassen"
+                app._post_status("demo_missing", good=good, count=24)
             else:
-                status += " · keine CRC-Fehler"
+                app._post_status("demo_image", good=good)
         app.events.put(("progress", 100))
-        app.events.put(("status", status))
         details.update(scene=args.scene, session=session.summary(), crc_errors=receiver.stats.bad_payloads)
 
     def start():

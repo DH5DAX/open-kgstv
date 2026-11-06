@@ -5,11 +5,14 @@ Referenzziel: **KG-STV 1.0.1 build 004**, EXE-SHA-256
 
 ## Nachweise und Grenzen
 
-Lokaler Prüfstand am 5. November 2026: 31 automatische Tests bestanden unter
+Lokaler Prüfstand am 6. November 2026: 39 automatische Tests bestanden unter
 Python 3.13. Zusätzlich wurde ein vollständiges Bild über den WAV-Export der
 Oberfläche mit 4L-FSK/CONV erzeugt und wieder empfangen: 300/300 Bildblöcke,
 336 gültige Nutzdatenpakete, keine CRC-Fehler. Das Live-Fensterverhalten und
 PTT-Freigaben bei Fehlern werden mit simulierten Audiogeräten geprüft.
+Hinzu kommen Tests für den Sprachwechsel während laufender Vorgänge, den Erhalt
+der Eingaben und Geräteauswahl, die gespeicherte Sprache sowie WAV-Textexport
+aus der zweisprachigen Oberfläche. Dabei wird keine Funkhardware geöffnet.
 
 | Teil | Stand |
 |---|---|
