@@ -27,6 +27,8 @@ hardware tests are still pending.
 - A layered TX image editor: photos, RX collages, text, crop/colour adjustments,
   undo/redo and portable templates, plus a local RX/TX/photo/template gallery.
 - Persistent RX/TX message history with search and text export.
+- A compact live 0–3 kHz audio waterfall beside the chat, with an eight-second
+  history, frequency cursor, input peak level and clipping indicator.
 - Researched activity-frequency presets and modular local ADIF QSO logging.
 - JSON reception reports with packet details, errors and missing image blocks.
 
@@ -48,7 +50,8 @@ these scenes are not evidence of on-air reception or original-KG-STV interoperab
 
 ### Operating
 
-Frequency presets, TX/RX images, QSO logging and a pinned message history.
+Frequency presets, TX/RX images, QSO logging, pinned chat and an audio waterfall.
+The waterfall in these screenshots shows a paused, locally generated MSK signal.
 
 ![Operating window without tabs, connected to Hamlib Dummy](docs/screenshots/operating.jpg)
 
@@ -108,6 +111,7 @@ tested against the real Hamlib Dummy backend; physical radio testing is pending.
 | Save image… | Save the received image |
 | ⚙ → Audio & PTT → Refresh devices | List available audio devices |
 | Start receiving | Start reception from the selected input |
+| Waterfall | Live 0–3 kHz input spectrum; hover to read a frequency |
 | Send image / Send text | Play the transmission on the selected output |
 | Stop | Stop the current operation |
 | Error correction | Enable convolutional error correction |
@@ -127,6 +131,20 @@ The application opens no audio devices at startup. Stop reception before
 transmitting. Clicking a send button plays audio and activates the configured
 PTT method, if any. With Hamlib PTT selected, sending requires a connected radio.
 WAV export remains available without a radio connection.
+
+The waterfall shares the selected receive input and starts with **Start receiving**.
+Newest audio appears at the top; **Stop** freezes the view and the next reception
+clears it. It remains visible beside the chat when the image workspace scrolls.
+Blue/cyan/amber show increasing signal strength on a fixed −95 to −15 dBFS colour
+scale. The number at bottom right is the input's peak level; **CLIPPING** indicates
+samples near full scale. The cursor only measures audio frequency; it does not
+tune the radio or change the receive offset.
+
+The display uses a 1024-sample Hann FFT at 12 kHz (about 11.7 Hz per bin), with
+ten rows per second and eight seconds of history. It measures audio before the
+decoder's frequency-offset correction. Preview buffering is bounded and separate
+from decoding; grey rows mark missing capture/preview audio, whose elapsed time
+is not represented to scale. It monitors live RX only, not WAV imports or TX.
 
 The language preference is stored in `OpenKGSTV/settings.json` under `%APPDATA%`
 on Windows, `~/Library/Application Support` on macOS, or `$XDG_CONFIG_HOME`
@@ -190,12 +208,13 @@ behavior has not yet been validated against the running original application.
 | BSR and all compression scales against the original | Pending |
 | Live audio and PTT on radio hardware | Implemented, not hardware-tested |
 
-86 automated tests passed locally on November 9, 2026, including Hamlib protocol,
+94 automated tests passed locally on November 9, 2026, including Hamlib protocol,
 PTT failure handling, real Hamlib Dummy control, language switching, saved
 profiles, GUI WAV export, layered templates, library/history persistence,
-compact German layouts, frequency presets and ADIF append/retry/failure cases. The original recordings
+compact German layouts, frequency presets, ADIF append/retry/failure cases and
+waterfall frequency/level calibration, gaps, clipping and receive lifecycle. The original recordings
 are a small, clean sample set; they do not establish receiver performance under
-fading, multipath, clipping, clock drift or Doppler. Automatic AFC, a waterfall,
+fading, multipath, clipping, clock drift or Doppler. Automatic AFC,
 Windows INI compatibility and original image-processor IPC are not implemented.
 
 The detailed [compatibility record](COMPATIBILITY.md) is currently in German.

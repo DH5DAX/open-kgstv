@@ -19,6 +19,8 @@ from .radio_gui import RadioPanel
 from .image_document import Document, load_image
 from .library import Library, message_line, utc_now
 from .library_gui import GalleryWindow, HistoryWindow, STORAGE_ERRORS
+from .waterfall import AudioMonitor
+from .waterfall_gui import Waterfall
 
 
 class Application:
@@ -47,6 +49,7 @@ class Application:
         self.worker_thread = None
         self.cancelled = threading.Event()
         self.live = None
+        self.audio_monitor = AudioMonitor()
         self.tx_image = self.rx_image = self.rx_summary = None
         self.tx_document = None
         self.tx_context = {}
@@ -285,15 +288,21 @@ class Application:
         self._button(compose, "text_wav", lambda:self.encode("text", False), idle=True).pack(side="right", padx=6)
         self.message = ttk.Entry(compose)
         self.message.pack(side="left", fill="x", expand=True)
-        log_frame = tk.Frame(messages.body, bg=theme.PANEL)
-        log_frame.pack(fill="x")
+        monitors = tk.Frame(messages.body, bg=theme.PANEL)
+        monitors.pack(fill="x")
+        monitors.columnconfigure(0, weight=3)
+        monitors.columnconfigure(1, weight=2, minsize=340)
+        log_frame = tk.Frame(monitors, bg=theme.PANEL)
+        log_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
+        self.waterfall = Waterfall(monitors, tr=self.tr, sans=self.sans, mono=self.mono)
+        self.waterfall.grid(row=0, column=1, sticky="nsew")
         scroll = ttk.Scrollbar(log_frame)
         scroll.pack(side="right", fill="y")
         self.log = tk.Text(log_frame, height=7, wrap="word", state="disabled", font=(self.mono, 10),
                            bg=theme.WELL, fg=theme.TEXT, insertbackground=theme.TEXT, relief="flat",
                            highlightthickness=1, highlightbackground=theme.BORDER, padx=10, pady=8,
                            yscrollcommand=scroll.set)
-        self.log.pack(fill="x", expand=True)
+        self.log.pack(fill="both", expand=True)
         scroll.configure(command=self.log.yview)
         self.log.tag_configure("TX", foreground=theme.BLUE)
 
@@ -416,6 +425,7 @@ class Application:
         self._set_activity(self.activity)
         self.radio_panel.refresh_labels()
         self.setup_window.title(self.tr("setup_title"))
+        self.waterfall.redraw()
         for window in list(self.studio_windows):
             window.translate()
 
@@ -786,7 +796,10 @@ class Application:
                     self.events.put(("error", ("audio_error", str(data))))
                 else:
                     self.events.put((event, data))
-            self.live = LiveReceiver(callback, device=self.device_ids[self.input_device.get()], frequency_offset=frequency)
+            self.audio_monitor = AudioMonitor()
+            self.waterfall.reset()
+            self.live = LiveReceiver(callback, device=self.device_ids[self.input_device.get()],
+                                     frequency_offset=frequency, audio_monitor=self.audio_monitor)
             self._set_status("starting_rx")
             self._set_activity("rx")
             self.live.start()
@@ -813,6 +826,7 @@ class Application:
         self._set_activity("stopping")
 
     def _poll(self):
+        self.waterfall.consume(self.audio_monitor.drain())
         try:
             while True:
                 event, data = self.events.get_nowait()
@@ -855,6 +869,7 @@ class Application:
                     self.radio_panel.handle(event, data)
         except queue.Empty:
             pass
+        self.waterfall.set_running(self.live is not None and self.activity == "rx")
         self._sync_controls()
         self._poll_after = self.root.after(80, self._poll)
 

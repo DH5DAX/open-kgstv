@@ -8,8 +8,8 @@ license; no downloaded reference images are included.
 To reproduce a scene from an installed checkout:
 
 ```console
-python tools/studio_demo.py operating
-python tools/studio_demo.py operating --language de
+python tools/studio_demo.py operating --waterfall
+python tools/studio_demo.py operating --language de --waterfall
 python tools/studio_demo.py editor
 python tools/studio_demo.py gallery
 python tools/studio_demo.py history
@@ -24,6 +24,11 @@ the real UI, not received on-air contacts. Each run stores sample data in a fres
 folder under `outputs/studio-demo/`; the user's normal library/logbook is untouched.
 Use `--compact` for minimum-size layout checks. The editor and QSO dialog have
 scrollable inspectors/forms; chat remains visible below the operating workspace.
+The operating screenshots include the compact 0–3 kHz waterfall next to chat.
+`--waterfall` passes locally generated MSK audio with seeded noise through the
+actual spectrum analyser and shows the result paused. It opens no audio device
+and does not imply live radio reception. Grey separator rows in normal use mark
+audio/preview gaps; the dark stripes in this demo are generated signal pauses.
 
 The following earlier screenshots preserve modem-loopback verification scenes
 and show the previous navigation layout. To reproduce the same signal tests

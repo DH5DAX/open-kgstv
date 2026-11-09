@@ -79,7 +79,9 @@ class InterfaceTests(unittest.TestCase):
                 errors.append(data)
 
         fake_audio = Mock(); fake_audio.InputStream.side_effect = fake_input
-        receiver = LiveReceiver(callback)
+        from kgstv.waterfall import AudioMonitor
+        monitor = AudioMonitor()
+        receiver = LiveReceiver(callback, audio_monitor=monitor)
         with patch.dict('sys.modules', {'sounddevice':fake_audio}):
             try:
                 receiver.start()
@@ -87,6 +89,7 @@ class InterfaceTests(unittest.TestCase):
                 self.assertFalse(receiver.thread.is_alive(), 'Live decoder did not reach END')
                 self.assertFalse(errors)
                 self.assertEqual(received, messages)
+                self.assertEqual(len(monitor.drain()), 12)
             finally:
                 receiver.stop()
                 receiver.thread.join(timeout=2)

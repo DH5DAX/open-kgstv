@@ -25,6 +25,8 @@ nicht**; die einzelnen Nachweise stehen in [COMPATIBILITY.md](COMPATIBILITY.md).
 - TX-Bildeditor mit Bildebenen, RX-Collagen, Texten, Bildkorrekturen,
   Rückgängig/Wiederholen und portablen Vorlagen; lokale RX-/TX-/Vorlagengalerie.
 - Dauerhafter, durchsuchbarer Nachrichtenverlauf mit Export.
+- Kompakter Live-Wasserfall für 0–3 kHz neben dem Chat: acht Sekunden Verlauf,
+  Frequenzcursor, Eingangspegel und Übersteuerungsanzeige.
 - Recherchierte Aktivitätsfrequenzen und modulares lokales ADIF-QSO-Logging.
 
 Anleitungen: [Bildeditor, Galerie und Chat](docs/IMAGE-STUDIO.md),
@@ -43,7 +45,8 @@ Aufnahmen der laufenden Windows-Oberfläche mit eigenen Testmotiven und isoliert
 Beispielkontakten. Die Funkgerätesteuerung ist mit Hamlibs Software-Dummy verbunden.
 Diese Szenen sind kein Nachweis von Funkempfang oder Original-Kompatibilität.
 
-**Operating:** Frequenzwahl, TX/RX, QSO-Logging und dauerhaft sichtbarer Chat.
+**Operating:** Frequenzwahl, TX/RX, QSO-Logging, dauerhaft sichtbarer Chat und
+Audio-Wasserfall. Der Wasserfall zeigt hier ein pausiertes, lokal erzeugtes MSK-Signal.
 
 ![Operating ohne Reiter, auf Deutsch](docs/screenshots/operating-de.jpg)
 
@@ -109,6 +112,21 @@ die Audio-/PTT-Auswahl. Beim Start erfolgt keine automatische Verbindung.
 Neben der Einstellungsdatei liegen `library.sqlite3` mit Galerie, Vorlagen,
 TX-Entwurf und Nachrichten sowie standardmäßig `logbook.adi` für die QSOs.
 
+Der Wasserfall startet mit **Empfang starten** am gewählten Audioeingang und
+zeigt 0–3 kHz vor der Frequenzversatz-Korrektur. Neue Zeilen erscheinen oben;
+**Stoppen** hält das Bild an, der nächste Empfang beginnt mit leerem Verlauf.
+Er bleibt neben dem Chat sichtbar, auch wenn der Bildbereich gescrollt wird.
+Blau/Cyan/Amber zeigen zunehmende Signalstärke auf einer festen Farbskala von
+−95 bis −15 dBFS. Rechts unten stehen der Spitzenpegel des Eingangs bzw.
+**ÜBERSTEUERT** bei Samples nahe Vollaussteuerung. Mit der Maus lässt sich die
+Audiofrequenz ablesen; der Cursor verstellt weder Funkgerät noch Empfangsversatz.
+
+1024 Samples mit Hann-Fenster bei 12 kHz ergeben rund 11,7 Hz pro Frequenzschritt.
+Zehn Zeilen pro Sekunde zeigen acht Sekunden Verlauf. Die begrenzte
+Vorschauschlange arbeitet unabhängig vom Decoder; graue Zeilen kennzeichnen
+Audio-/Vorschaulücken, deren Dauer nicht maßstäblich dargestellt wird.
+Die Anzeige arbeitet beim Live-Empfang, nicht beim WAV-Import oder Senden.
+
 Geprüft mit dem echten Hamlib-Dummy-Backend; **der Test an einem physischen
 IC-7610 einschließlich USB-Audio und HF steht noch aus**.
 
@@ -158,9 +176,10 @@ Der Download ist ausdrücklich, hashgeprüft und umfasst nur öffentliche
 Audio-/Bild-Testdaten. Ohne die Aufnahmen werden die Originalsignal-Tests als
 übersprungen gemeldet. Die Fremddateien unter `research/reference/` sind
 gitignoriert und werden nicht im Python-Paket ausgeliefert.
-Am 9. November 2026 bestanden lokal alle 86 Tests, einschließlich Hamlib-Dummy,
+Am 9. November 2026 bestanden lokal alle 94 Tests, einschließlich Hamlib-Dummy,
 CAT-PTT, Bildeditor, Vorlagen, Galerie, Chat-Persistenz, kompaktem deutschem Layout,
-Frequenzwahl und ADIF-Schreiben einschließlich Wiederholung und Fehlerfällen. Die Oberflächentests benötigen
+Frequenzwahl, ADIF-Schreiben einschließlich Wiederholung und Fehlerfällen sowie
+Wasserfall-Frequenz-/Pegelgenauigkeit, Lücken, Clipping und Empfangssteuerung. Die Oberflächentests benötigen
 Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 
 ## Aufbau
@@ -173,6 +192,7 @@ Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 | `session.py` | Bildaufbau, Rufzeichen, Sender und experimentelles BSR |
 | `audio.py` | Offline-Audio, WAV/MP3 und Abtastratenkonvertierung |
 | `live.py` | Optionale Soundkarte und PTT mit Freigabe im Fehlerfall |
+| `waterfall.py` / `waterfall_gui.py` | Begrenzte Audio-Vorschau, FFT und kompakte Wasserfallanzeige |
 | `hamlib.py`, `radio_gui.py` | rigctld-Protokoll, Verbindungen, CAT-PTT und Funkgerätesteuerung |
 | `activity.py` | Aktivitätsfrequenzen mit Quellen und Einordnung |
 | `image_document.py`, `editor_gui.py` | Bildebenen, Rendering, Vorlagen und Editor |

@@ -5,7 +5,7 @@ Referenzziel: **KG-STV 1.0.1 build 004**, EXE-SHA-256
 
 ## Nachweise und Grenzen
 
-Lokaler Prüfstand am 9. November 2026: 86 automatische Tests bestanden unter
+Lokaler Prüfstand am 9. November 2026: 94 automatische Tests bestanden unter
 Python 3.13. Zusätzlich wurde ein vollständiges Bild über den WAV-Export der
 Oberfläche mit 4L-FSK/CONV erzeugt und wieder empfangen: 300/300 Bildblöcke,
 336 gültige Nutzdatenpakete, keine CRC-Fehler. Das Live-Fensterverhalten und
@@ -45,7 +45,8 @@ angesehen. Fünf aktuelle Screenshots und ein geprüftes Python-Wheel liegen vor
 | Aktivitätsfrequenzen | Quellenstand 09.11.2026, keine Live-Aktivitätsanzeige |
 | QSO-Logbuch | Lokales ADIF 3.1.8; Online-Anbindungen noch nicht implementiert |
 | Windows-INI, Image-Processor-IPC, Archivdetails | Nicht implementiert |
-| Wasserfall/Augendiagramm | Nicht implementiert |
+| Audio-Wasserfall | Live-RX 0–3 kHz, acht Sekunden, Pegel/Clipping; mit synthetischem Audio geprüft |
+| Augendiagramm | Nicht implementiert |
 
 Die Originalaufnahmen stammen aus einer kleinen, sauberen Testsammlung. Der
 Erfolg sagt nichts über die allgemeine Empfindlichkeit bei Fading, Multipath,

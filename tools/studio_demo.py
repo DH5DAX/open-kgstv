@@ -39,6 +39,7 @@ def main():
     parser.add_argument("scene",choices=("operating","editor","gallery","history","qso","setup"))
     parser.add_argument("--language",choices=("en","de"),default="en")
     parser.add_argument("--compact",action="store_true")
+    parser.add_argument("--waterfall",action="store_true",help="Show a paused synthetic MSK audio preview (no soundcard)")
     args=parser.parse_args()
     folder=ROOT/"outputs"/"studio-demo"/uuid.uuid4().hex
     folder.mkdir(parents=True)
@@ -74,6 +75,15 @@ def main():
     app._recent_messages=list(reversed(app.library.messages(limit=200)))
     app._render_messages()
     app.message.insert(0,"TEST2 de TEST - ready for your next image")
+    if args.waterfall:
+        import numpy as np
+        from kgstv.modem import modulate
+        from kgstv.protocol import text_frame
+        from kgstv.waterfall import HOP
+        signal = modulate([text_frame("TEST>CQ CQ de TEST - KG-STV waterfall")], rate=12000)
+        samples = np.resize(signal, HOP*80)*.12
+        samples += np.random.default_rng(7).normal(0, .0002, len(samples))
+        app.waterfall.consume([(n, samples[n*HOP:(n+1)*HOP], False) for n in range(80)])
     panel=app.radio_panel
     panel.connection.set("local");panel.model.set("1 · Hamlib Dummy");panel.device.set("")
     panel.baud.set("0");panel.civ.set("");panel.executable.set(find_rigctld());panel.ptt_method.set("hamlib")

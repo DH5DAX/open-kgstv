@@ -8,10 +8,11 @@ from .session import Session
 
 
 class LiveReceiver:
-    def __init__(self, callback, *, device=None, frequency_offset=0):
+    def __init__(self, callback, *, device=None, frequency_offset=0, audio_monitor=None):
         self.callback = callback
         self.device = device
         self.frequency_offset = frequency_offset
+        self.audio_monitor = audio_monitor
         self.stopped = threading.Event()
         self.thread = None
 
@@ -33,10 +34,13 @@ class LiveReceiver:
 
             def capture(indata, frames, time_info, status):
                 nonlocal pending_gap
+                part = indata[:, 0].copy()
+                if self.audio_monitor is not None:
+                    self.audio_monitor.publish(part, gap=bool(status))
                 if status:
                     pending_gap = True
                 try:
-                    packets.put_nowait((indata[:, 0].copy(), pending_gap))
+                    packets.put_nowait((part, pending_gap))
                     pending_gap = False
                 except queue.Full:
                     pending_gap = True
