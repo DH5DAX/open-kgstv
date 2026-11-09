@@ -5,7 +5,7 @@ Referenzziel: **KG-STV 1.0.1 build 004**, EXE-SHA-256
 
 ## Nachweise und Grenzen
 
-Lokaler Prüfstand am 9. November 2026: 64 automatische Tests bestanden unter
+Lokaler Prüfstand am 9. November 2026: 86 automatische Tests bestanden unter
 Python 3.13. Zusätzlich wurde ein vollständiges Bild über den WAV-Export der
 Oberfläche mit 4L-FSK/CONV erzeugt und wieder empfangen: 300/300 Bildblöcke,
 336 gültige Nutzdatenpakete, keine CRC-Fehler. Das Live-Fensterverhalten und
@@ -17,6 +17,12 @@ Hamlib wird mit simulierten TCP-Antworten und dem echten Dummy-Backend aus
 Hamlib 4.7.2 geprüft: Frequenz/Betriebsart, CAT-PTT, Verbindungsverlust,
 unbestätigte PTT-Freigabe, Prozessende und gespeicherte Profile. Das
 IC-7610-USB-Profil ist vorbereitet, der physische Gerätetest steht aus.
+Der lokale Bildeditor wurde mit Ebenen, RX-Collagen, Texten, portablen Vorlagen
+und Undo/Redo geprüft. Weitere Tests sichern Galerie-/Chat-Persistenz,
+kompakte deutsche Fenster, die ausdrücklich ausgelöste Frequenzwahl sowie
+ADIF-Anhängen, stabile QSO-IDs, UTC-Tageswechsel, Satellitenfrequenzen und
+Schreibfehler ab. Die neuen Fenster wurden zusätzlich am echten Windows-Desktop
+angesehen. Fünf aktuelle Screenshots und ein geprüftes Python-Wheel liegen vor.
 
 | Teil | Stand |
 |---|---|
@@ -35,6 +41,9 @@ IC-7610-USB-Profil ist vorbereitet, der physische Gerätetest steht aus.
 | Alle 16 Skalen gegen Original | **Ausstehend**; eigene Farb-/Codec-Tests vorhanden |
 | Live-Audio und PTT an Hardware | Implementiert, **nicht an Funkhardware getestet** |
 | Hamlib-Frequenz/Betriebsart/CAT-PTT | Softwaretests mit rigctld 4.7.2 bestanden; IC-7610-Hardwaretest ausstehend |
+| TX-Editor, Vorlagen, Galerie, Chat | Lokal implementiert und getestet; keine HamRig-Portal-Serversynchronisierung |
+| Aktivitätsfrequenzen | Quellenstand 09.11.2026, keine Live-Aktivitätsanzeige |
+| QSO-Logbuch | Lokales ADIF 3.1.8; Online-Anbindungen noch nicht implementiert |
 | Windows-INI, Image-Processor-IPC, Archivdetails | Nicht implementiert |
 | Wasserfall/Augendiagramm | Nicht implementiert |
 

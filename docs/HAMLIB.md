@@ -2,8 +2,9 @@
 
 Open KG-STV talks to Hamlib's `rigctld` using TCP. It can start and stop its own
 local daemon for a USB/CAT radio, or connect to an existing server. Frequency,
-mode and PTT are read back in the **Radio** tab. No connection starts automatically.
-Audio still travels through the soundcard selected under **Audio & PTT**.
+mode and PTT are read back in the operating window. **⚙** opens connection,
+audio and PTT setup; there are no navigation tabs. No connection starts automatically.
+Audio still travels through the soundcard selected under **⚙ → Audio & PTT**.
 
 ## Install Hamlib
 
@@ -36,14 +37,15 @@ Hamlib binaries nor Python Hamlib bindings are bundled in the Python package.
    has separate DATA1/2/3 input selections; check the input for the data mode
    actually shown on the radio. With CAT PTT, leave **USB SEND** off so serial
    control-line changes do not also key the transmitter.
-4. In Open KG-STV select **Radio → IC-7610 USB profile**. This selects Hamlib
+4. In Open KG-STV select **⚙ → IC-7610 USB profile**. This selects Hamlib
    model **3078**, 115200 baud, CI-V **0x98** and **Hamlib CAT PTT**. Choose the
-   correct **CAT port / device** using **Refresh ports**, then **Connect**.
+   correct **CAT port / device** using **Refresh ports**, save and close Setup,
+   then click **Connect** in the operating window.
 5. Verify that frequency and mode match the radio. Connecting only reads state;
-   it does not tune the radio or key PTT. Use **Set frequency** and **Set mode**
+   it does not tune the radio or key PTT. Open **Frequency & mode…** to set these
    explicitly when needed. **PKTUSB** requests USB data mode; filter **0** uses
    Hamlib's normal/default width.
-6. Under **Audio & PTT**, refresh devices and choose the IC-7610 USB input and
+6. Under **⚙ → Audio & PTT**, refresh devices and choose the IC-7610 USB input and
    output. CAT connection alone does not select the soundcard. Start reception
    to check decoding. For transmission, stop reception, enter your callsign,
    and use **Send image** or **Send text**. Set audio drive and radio output
@@ -71,8 +73,14 @@ This profile has been implemented and tested with simulated CAT responses;
 - A radio already reporting TX is not taken over by a new audio transmission.
   Forced process termination or loss of power cannot guarantee PTT release.
 - WAV export never connects to a radio or activates PTT.
-- **Save radio profile** and **Connect** save connection/PTT settings alongside
-  the language preference. Audio devices, messages and callsign are not saved.
+- **Save radio profile**, **Save & close** and **Connect** save connection/PTT
+  settings alongside the language preference. **Save & close** also remembers
+  audio-device names and serial PTT; callsign is saved on application close.
+  Messages and images are stored separately in the local library.
+
+The operating window also provides sourced [activity presets](ACTIVITY-FREQUENCIES.md).
+QO-100 requires a station-specific CAT/IF dial and does not configure split or a
+transverter automatically. Selection alone never tunes or transmits.
 
 ## Other radios and existing servers
 

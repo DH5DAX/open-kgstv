@@ -3,14 +3,15 @@ from dataclasses import asdict
 import math
 import threading
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 from . import theme
 from .hamlib import RadioConfig, RadioSession, PTTReleaseError, find_rigctld, list_models
 from .i18n import load_settings, save_settings
+from .activity import ACTIVITIES
 
 
 class RadioPanel:
-    def __init__(self, app, parent):
+    def __init__(self, app, parent, operating_parent):
         self.app = app
         self.session = None
         self.busy = False
@@ -40,7 +41,13 @@ class RadioPanel:
         self.bandwidth = tk.StringVar(app.root, "0")
         self.readback = tk.StringVar(app.root, "— MHz")
         self.mode_readback = tk.StringVar(app.root, "—")
-        self._build(parent)
+        self.activity_index = None
+        self.activity_label = tk.StringVar(app.root, app.tr("activity_choose"))
+        self.activity_note = tk.StringVar(app.root, "")
+        self.satellite_dial = tk.StringVar(app.root, "")
+        self.last_activity = None
+        self._activity_language = None
+        self._build(parent, operating_parent)
         self.connection.trace_add("write", lambda *_:self.sync())
         self.ptt_method.trace_add("write", lambda *_:app._sync_controls())
 
@@ -65,23 +72,28 @@ class RadioPanel:
         self.app._bindings.append((button, key))
         return button
 
-    def _build(self, parent):
+    def _build(self, parent, operating_parent):
         app = self.app
-        status = theme.Card(parent)
+        status = theme.Card(operating_parent, padding=10)
         status.pack(fill="x", pady=(0, 12))
-        app._heading(status.body, "radio_tab")
         row = tk.Frame(status.body, bg=theme.PANEL)
         row.pack(fill="x")
         tk.Label(row, textvariable=self.readback, bg=theme.PANEL, fg=theme.TEXT,
-                 font=(app.mono, 26, "bold")).pack(side="left")
+                 font=(app.mono, 18, "bold")).pack(side="left")
         tk.Label(row, textvariable=self.mode_readback, bg=theme.PANEL, fg=theme.BLUE,
                  font=(app.mono, 11)).pack(side="left", padx=18)
         self.disconnect_button = app._button(row, "radio_disconnect", self.disconnect)
         self.disconnect_button.pack(side="right", padx=(8, 0))
         self.connect_button = app._button(row, "radio_connect", self.connect, style="Receive.TButton")
         self.connect_button.pack(side="right")
-        controls = tk.Frame(status.body, bg=theme.PANEL)
-        controls.pack(fill="x", pady=(8, 0))
+        app._button(row, "tuning_open", self.open_tuning, style="Link.TButton").pack(side="right", padx=16)
+        self.tuning_window = tk.Toplevel(app.root, bg=theme.PANEL)
+        self.tuning_window.withdraw()
+        self.tuning_window.geometry("850x190")
+        self.tuning_window.minsize(800, 190)
+        self.tuning_window.protocol("WM_DELETE_WINDOW", self.tuning_window.withdraw)
+        controls = tk.Frame(self.tuning_window, bg=theme.PANEL, padx=18, pady=18)
+        controls.pack(fill="x")
         self.freq_entry = self._field(controls, "radio_frequency", self.target_frequency, 0, 0, width=14)
         self.freq_button = app._button(controls, "radio_set_frequency", self.set_frequency)
         self.freq_button.grid(row=1, column=1, padx=(0, 20))
@@ -90,9 +102,21 @@ class RadioPanel:
         self.width_entry = self._field(controls, "radio_bandwidth", self.bandwidth, 0, 3, width=8)
         self.mode_button = app._button(controls, "radio_set_mode", self.set_mode)
         self.mode_button.grid(row=1, column=4)
-        hint = app._label(status.body, "radio_control_hint", anchor="w", justify="left", wraplength=820)
-        hint.configure(fg=theme.MUTED, font=(app.sans, 9))
-        hint.pack(anchor="w", pady=(10, 0))
+        app._label(self.tuning_window, "radio_control_hint", wraplength=800, justify="left").pack(anchor="w", padx=18)
+        presets = tk.Frame(status.body, bg=theme.PANEL)
+        presets.pack(fill="x", pady=(8, 0))
+        app._label(presets, "activity_frequencies").pack(side="left", padx=(0, 10))
+        self.activity_combo = ttk.Combobox(presets, textvariable=self.activity_label, state="readonly", width=42,
+                                          values=[entry.label(app.language) for entry in ACTIVITIES])
+        self.activity_combo.pack(side="left", fill="x", expand=True)
+        self.activity_combo.bind("<<ComboboxSelected>>", self.select_activity)
+        self.activity_tune = app._button(presets, "activity_tune", self.tune_activity, style="Receive.TButton")
+        self.activity_tune.pack(side="left", padx=8)
+        app._button(presets, "activity_details", self.activity_details).pack(side="left")
+        self.satellite_row = tk.Frame(status.body, bg=theme.PANEL)
+        app._label(self.satellite_row, "activity_sat_dial").pack(side="left", padx=(0, 10))
+        self.satellite_entry = ttk.Entry(self.satellite_row, textvariable=self.satellite_dial, width=16)
+        self.satellite_entry.pack(side="left")
 
         setup = theme.Card(parent)
         setup.pack(fill="x", pady=(0, 12))
@@ -159,7 +183,7 @@ class RadioPanel:
         hint.configure(fg=theme.MUTED, font=(app.sans, 9))
         hint.pack(anchor="w", pady=(10, 0))
 
-    def config(self):
+    def config(self, *, validate=True):
         local = self.connection.get() == "local"
         model = self.model.get().split()
         if local and not model:
@@ -168,8 +192,13 @@ class RadioPanel:
             model=int(model[0]) if local else 3078, device=self.device.get().strip(),
             baud=int(self.baud.get()) if local else 115200, civ=self.civ.get().strip(),
             host=self.host.get().strip(), port=4532 if local else int(self.port.get()))
-        config.validate()
+        if validate:
+            config.validate()
         return config
+
+    def open_tuning(self):
+        self.tuning_window.deiconify()
+        self.tuning_window.lift()
 
     def delays(self):
         values = [float(value.get().replace(",", "."))/1000 for value in (self.lead_ms, self.tail_ms)]
@@ -179,7 +208,7 @@ class RadioPanel:
 
     def save(self):
         try:
-            config = self.config()
+            config = self.config(validate=False)
             self.delays()
             save_settings(self.app.settings_path, {"radio":dict(asdict(config),
                 ptt_method=self.ptt_method.get(), lead_ms=self.lead_ms.get(), tail_ms=self.tail_ms.get())})
@@ -239,7 +268,11 @@ class RadioPanel:
             return
         if not self.save():
             return
-        config = self.config()
+        try:
+            config = self.config()
+        except ValueError as exc:
+            self.app._error("radio_config_error", exc)
+            return
         old = self.session
         self.generation += 1
         generation = self.generation
@@ -270,6 +303,49 @@ class RadioPanel:
             self.app._error("radio_invalid_frequency")
             return
         self._task(lambda:self.session.set_frequency(value))
+
+    def select_activity(self, event=None):
+        index = self.activity_combo.current()
+        if index < 0:
+            return
+        self.activity_index = index
+        entry = ACTIVITIES[index]
+        self.activity_note.set(entry.note(self.app.language))
+        if entry.satellite:
+            self.satellite_row.pack(fill="x", pady=8)
+        else:
+            self.satellite_row.pack_forget()
+            self.target_frequency.set(f"{entry.hz/1e6:.6f}")
+        self.target_mode.set("PKTUSB")
+        self.sync()
+
+    def tune_activity(self):
+        if self.activity_index is None or not self.connected or self.busy or self.app.busy:
+            return
+        entry = ACTIVITIES[self.activity_index]
+        try:
+            value = entry.dial_hz(self.satellite_dial.get())
+        except ValueError:
+            self.app._error("activity_sat_required")
+            return
+        self.target_frequency.set(f"{value/1e6:.6f}")
+        self.target_mode.set("PKTUSB")
+        session = self.session
+        self._task(lambda:(session.tune(value, "PKTUSB"), (entry.id, value))[1], done="radio_activity_tuned")
+
+    def activity_details(self):
+        text = self.activity_note.get()+"\n\n"+self.app.tr("activity_hint")
+        if self.activity_index is not None:
+            text += "\n\n"+ACTIVITIES[self.activity_index].source
+            if messagebox.askyesno(self.app.tr("activity_frequencies"), text+"\n\n"+self.app.tr("activity_open_source"), parent=self.app.root):
+                self.activity_source()
+        else:
+            messagebox.showinfo(self.app.tr("activity_frequencies"), text.strip(), parent=self.app.root)
+
+    def activity_source(self):
+        if self.activity_index is not None:
+            import webbrowser
+            webbrowser.open(ACTIVITIES[self.activity_index].source)
 
     def set_mode(self):
         if not self.connected or self.app.busy or self.busy:
@@ -320,6 +396,9 @@ class RadioPanel:
         elif event == "radio_released":
             self.release_failed = False
             app._set_status("radio_ptt_released")
+        elif event == "radio_activity_tuned":
+            self.last_activity = data
+            app._set_status("activity_tuned")
         elif event == "radio_models_ready":
             self.model_combo.configure(values=[label for _, label in data])
             app._set_status("radio_models_loaded", {"count":len(data)})
@@ -343,6 +422,16 @@ class RadioPanel:
         self.refresh_labels()
 
     def refresh_labels(self):
+        self.tuning_window.title(self.app.tr("tuning_open"))
+        if hasattr(self, "activity_combo") and self._activity_language != self.app.language:
+            self._activity_language = self.app.language
+            self.activity_combo.configure(values=[entry.label(self.app.language) for entry in ACTIVITIES])
+            if self.activity_index is None:
+                self.activity_label.set(self.app.tr("activity_choose"))
+            else:
+                entry = ACTIVITIES[self.activity_index]
+                self.activity_label.set(entry.label(self.app.language))
+                self.activity_note.set(entry.note(self.app.language))
         if self.release_failed:
             self.app.radio_status.set(self.app.tr("radio_release_error"))
         elif self.connected and self.state:
@@ -372,6 +461,9 @@ class RadioPanel:
         self.rx_button.state(["!disabled" if self.session and not self.busy else "disabled"])
         for widget in (self.freq_entry, self.freq_button, self.mode_combo, self.width_entry, self.mode_button):
             widget.configure(state="normal" if configured and not locked else "disabled")
+        self.activity_combo.configure(state="disabled" if locked else "readonly")
+        self.activity_tune.state(["!disabled" if configured and not locked and self.activity_index is not None else "disabled"])
+        self.satellite_entry.configure(state="disabled" if locked else "normal")
         self.save_button.state(["disabled" if locked else "!disabled"])
         self.refresh_labels()
 

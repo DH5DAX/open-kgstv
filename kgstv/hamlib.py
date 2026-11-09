@@ -341,6 +341,20 @@ class RadioSession:
             self.client.set_mode(mode, passband)
             self.callback("radio_state", self.client.snapshot())
 
+    def tune(self, frequency, mode="PKTUSB"):
+        """Explicit preset action. Never keys PTT or configures split/transverters."""
+        with self._ptt_lock:
+            self._check_ready()
+            try:
+                if self.client.get_ptt():
+                    raise HamlibError("The radio is already transmitting")
+            except HamlibError as exc:
+                if exc.code not in (-4, -11):
+                    raise
+            self.client.set_frequency(frequency)
+            self.client.set_mode(mode, 0)
+            self.callback("radio_state", self.client.snapshot())
+
     def _check_ready(self):
         if not self.connected:
             raise HamlibError("Connect to the radio first")

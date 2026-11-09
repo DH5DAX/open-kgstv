@@ -55,6 +55,11 @@ def setup(root):
     style.configure("TEntry", fieldbackground=WELL, foreground=TEXT, insertcolor=TEXT,
                     bordercolor=BORDER, lightcolor=BORDER, darkcolor=BORDER, padding=7)
     style.map("TEntry", bordercolor=[("focus", BLUE)], fieldbackground=[("disabled", PANEL)])
+    style.configure("TSpinbox", fieldbackground=WELL, foreground=TEXT, insertcolor=TEXT,
+                    background=HOVER, arrowcolor=MUTED, bordercolor=BORDER, padding=5)
+    style.configure("TNotebook", background=PANEL, bordercolor=BORDER)
+    style.configure("TNotebook.Tab", background=HOVER, foreground=MUTED, padding=(10, 7))
+    style.map("TNotebook.Tab", background=[("selected", "#25457C")], foreground=[("selected", TEXT)])
     style.configure("TCombobox", fieldbackground=WELL, background=HOVER, foreground=TEXT,
                     arrowcolor=MUTED, bordercolor=BORDER, lightcolor=BORDER,
                     darkcolor=BORDER, padding=6)

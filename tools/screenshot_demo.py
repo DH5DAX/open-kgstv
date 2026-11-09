@@ -72,7 +72,7 @@ def main():
         panel.ptt_method.set("hamlib")
         panel.target_frequency.set("14.230000")
         panel.bandwidth.set("2400")
-        app.show_page("radio_tab")
+        app.open_setup()
         def tune():
             if panel.busy:
                 root.after(100, tune)

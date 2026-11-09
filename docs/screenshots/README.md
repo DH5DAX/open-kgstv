@@ -8,6 +8,28 @@ license; no downloaded reference images are included.
 To reproduce a scene from an installed checkout:
 
 ```console
+python tools/studio_demo.py operating
+python tools/studio_demo.py operating --language de
+python tools/studio_demo.py editor
+python tools/studio_demo.py gallery
+python tools/studio_demo.py history
+python tools/studio_demo.py qso
+python tools/studio_demo.py setup
+```
+
+The current screenshots (`operating.jpg`, `operating-de.jpg`, `tx-editor.jpg`,
+`gallery.jpg`, `qso-log.jpg`) use original generated landscape/test-card artwork,
+isolated sample contacts and Hamlib Dummy at 14.233 MHz, PKTUSB, RX. They demonstrate
+the real UI, not received on-air contacts. Each run stores sample data in a fresh
+folder under `outputs/studio-demo/`; the user's normal library/logbook is untouched.
+Use `--compact` for minimum-size layout checks. The editor and QSO dialog have
+scrollable inspectors/forms; chat remains visible below the operating workspace.
+
+The following earlier screenshots preserve modem-loopback verification scenes
+and show the previous navigation layout. To reproduce the same signal tests
+with the current UI:
+
+```console
 python tools/screenshot_demo.py image
 python tools/screenshot_demo.py missing
 python tools/screenshot_demo.py text

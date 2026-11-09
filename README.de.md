@@ -21,6 +21,15 @@ nicht**; die einzelnen Nachweise stehen in [COMPATIBILITY.md](COMPATIBILITY.md).
 - Empfangsberichte mit Paketdaten, Fehlerstatus und fehlenden Bildblöcken.
 - Hamlib für USB/CAT und vorhandene rigctld-Server: Frequenz, Betriebsart und
   CAT-PTT, einschließlich IC-7610-USB-Profil. Robbie als Kopf- und Fenstersymbol.
+- Operating ohne Reiter; Funkgerät, Audio und PTT liegen hinter **⚙**.
+- TX-Bildeditor mit Bildebenen, RX-Collagen, Texten, Bildkorrekturen,
+  Rückgängig/Wiederholen und portablen Vorlagen; lokale RX-/TX-/Vorlagengalerie.
+- Dauerhafter, durchsuchbarer Nachrichtenverlauf mit Export.
+- Recherchierte Aktivitätsfrequenzen und modulares lokales ADIF-QSO-Logging.
+
+Anleitungen: [Bildeditor, Galerie und Chat](docs/IMAGE-STUDIO.md),
+[Frequenzen und Quellen](docs/ACTIVITY-FREQUENCIES.md) (Stand 09.11.2026),
+[ADIF-Logbuch und Erweiterungsschnittstelle](docs/LOGBOOK.md).
 
 Sechs öffentlich verfügbare Original-Bildaufnahmen werden mit je **300/300
 CRC-gültigen Bildblöcken** empfangen. Beide Original-Textaufnahmen werden korrekt
@@ -30,27 +39,25 @@ sind identisch. Das ersetzt keinen Test unserer Sendesignale im Windows-Original
 
 ## Screenshots
 
-Aufnahmen der laufenden Windows-Oberfläche. Das Testmotiv wurde für dieses
-Projekt erstellt; der Empfang erfolgt über den eigenen Modemkern aus erzeugten
-Audiodaten. Das ist ein eigener Sende-/Empfangstest, kein Gegentest mit dem
-originalen KG-STV.
+Aufnahmen der laufenden Windows-Oberfläche mit eigenen Testmotiven und isolierten
+Beispielkontakten. Die Funkgerätesteuerung ist mit Hamlibs Software-Dummy verbunden.
+Diese Szenen sind kein Nachweis von Funkempfang oder Original-Kompatibilität.
 
-**Vollständiger Bildempfang:** 4L-FSK mit Fehlerkorrektur, 300/300 Bildblöcke.
+**Operating:** Frequenzwahl, TX/RX, QSO-Logging und dauerhaft sichtbarer Chat.
 
-![Bild senden und vollständig empfangen](docs/screenshots/image-reception.jpg)
+![Operating ohne Reiter, auf Deutsch](docs/screenshots/operating-de.jpg)
 
-**Fehlende Bildblöcke:** 24 Blöcke wurden gezielt vor der Übertragung ausgelassen.
-Der Empfänger zeigt 276/300 Blöcke und bietet eine experimentelle BSR-Anfrage an.
+**Bildeditor:** Beliebige Bilder, Empfangsbild und bearbeitbare Texte kombinieren.
 
-![Unvollständiges Bild mit fehlenden Blöcken](docs/screenshots/missing-blocks.jpg)
+![TX-Bildeditor mit Ebenen und RX-Collage](docs/screenshots/tx-editor.jpg)
 
-**Textempfang:** MSK-Nachrichten im Empfangsprotokoll.
+**Galerie:** Lokale Bilder und portable Vorlagen verwalten.
 
-![Empfangene Textnachrichten](docs/screenshots/text-reception.jpg)
+![Bildergalerie mit Vorlagen](docs/screenshots/gallery.jpg)
 
-**Deutsche Oberfläche:** Umschalten über **DE** oben rechts, ohne Neustart.
+**QSO loggen:** Geprüfte Angaben an eine lokale ADIF-Datei anhängen.
 
-![Deutsche Oberfläche mit erhaltenem Empfangsbild](docs/screenshots/interface-de.jpg)
+![ADIF-QSO-Dialog](docs/screenshots/qso-log.jpg)
 
 ## Installation und Start
 
@@ -73,8 +80,8 @@ für den nächsten Start gespeichert: unter Windows in
 `~/Library/Application Support/OpenKGSTV/settings.json`, unter Linux in
 `$XDG_CONFIG_HOME/OpenKGSTV/settings.json` (Standard: `~/.config`).
 
-„Bilder & Nachrichten“ enthält die Bedienelemente für Bild- und Textfunk,
-„Audio & PTT“ die Soundkarten-, Frequenzversatz- und PTT-Einstellungen.
+Das Hauptfenster konzentriert sich auf den Funkbetrieb. **⚙** öffnet die
+Funkgeräte-, Soundkarten-, Frequenzversatz- und PTT-Einstellungen.
 Die Oberfläche öffnet beim Start keine Audiogeräte. „Geräte aktualisieren“ listet
 Eingänge und Ausgänge. „Empfang starten“ startet den ausgewählten Eingang. Vor dem
 Senden einen laufenden Empfang stoppen. „Bild senden“ und „Text senden“ geben
@@ -85,9 +92,9 @@ aktiviert. Ein leerer PTT-Port bedeutet: keine serielle Steuerung.
 
 Unter Windows x64 lädt `python tools/fetch_hamlib.py` das offizielle Hamlib-Paket
 in den Projektordner und prüft dessen SHA-256. Danach die Oberfläche neu starten.
-Unter **Funkgerät → IC-7610-USB-Profil** den passenden CI-V-COM-Port auswählen,
+Unter **⚙ → IC-7610-USB-Profil** den passenden CI-V-COM-Port auswählen,
 Baudrate und Adresse abgleichen (Vorgabe: 115200 und 0x98) und **Verbinden** wählen.
-Unter **Audio & PTT** zusätzlich die USB-Soundkarte des IC-7610 auswählen.
+Unter **⚙ → Audio & PTT** zusätzlich die USB-Soundkarte des IC-7610 auswählen.
 
 Am IC-7610 für USB-D1 **DATA1 MOD = USB** einstellen. Die vollständige
 [Einrichtungsanleitung](docs/HAMLIB.md) beschreibt die weiteren USB-Menüs,
@@ -96,15 +103,14 @@ andere Modelle, vorhandene Server und das Verhalten bei Verbindungsfehlern.
 Frequenz und Betriebsart werden zurückgelesen und nur auf ausdrücklichen Befehl
 gesetzt. Hamlib-CAT-PTT folgt der Audioübertragung einschließlich Stopp und
 Fehlerbehandlung. WAV-Export schaltet kein PTT. Eine unbestätigte PTT-Freigabe
-wird sichtbar gemeldet. Funkgeräteprofile und Sprache werden gespeichert;
-beim Start erfolgt keine automatische Verbindung.
+wird sichtbar gemeldet. Funkgeräteprofil, Sprache, Rufzeichen, Audio-Gerätenamen
+und Logbuchpfad werden gespeichert; **Speichern & schließen** im Setup übernimmt
+die Audio-/PTT-Auswahl. Beim Start erfolgt keine automatische Verbindung.
+Neben der Einstellungsdatei liegen `library.sqlite3` mit Galerie, Vorlagen,
+TX-Entwurf und Nachrichten sowie standardmäßig `logbook.adi` für die QSOs.
 
 Geprüft mit dem echten Hamlib-Dummy-Backend; **der Test an einem physischen
 IC-7610 einschließlich USB-Audio und HF steht noch aus**.
-
-![Hamlib-Funkgeräteseite mit Robbie und verbundenem Software-Dummy](docs/screenshots/hamlib-radio.jpg)
-
-![Deutsche PTT-Einstellungen im kompakten Fenster](docs/screenshots/hamlib-ptt-de.jpg)
 
 ## Kommandozeile
 
@@ -152,8 +158,9 @@ Der Download ist ausdrücklich, hashgeprüft und umfasst nur öffentliche
 Audio-/Bild-Testdaten. Ohne die Aufnahmen werden die Originalsignal-Tests als
 übersprungen gemeldet. Die Fremddateien unter `research/reference/` sind
 gitignoriert und werden nicht im Python-Paket ausgeliefert.
-Am 9. November 2026 bestanden lokal alle 64 Tests, einschließlich Hamlib-Dummy,
-CAT-PTT, Fehlerfällen und gespeicherten Funkgeräteprofilen. Die Oberflächentests benötigen
+Am 9. November 2026 bestanden lokal alle 86 Tests, einschließlich Hamlib-Dummy,
+CAT-PTT, Bildeditor, Vorlagen, Galerie, Chat-Persistenz, kompaktem deutschem Layout,
+Frequenzwahl und ADIF-Schreiben einschließlich Wiederholung und Fehlerfällen. Die Oberflächentests benötigen
 Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 
 ## Aufbau
@@ -167,6 +174,10 @@ Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 | `audio.py` | Offline-Audio, WAV/MP3 und Abtastratenkonvertierung |
 | `live.py` | Optionale Soundkarte und PTT mit Freigabe im Fehlerfall |
 | `hamlib.py`, `radio_gui.py` | rigctld-Protokoll, Verbindungen, CAT-PTT und Funkgerätesteuerung |
+| `activity.py` | Aktivitätsfrequenzen mit Quellen und Einordnung |
+| `image_document.py`, `editor_gui.py` | Bildebenen, Rendering, Vorlagen und Editor |
+| `library.py`, `library_gui.py` | Lokale SQLite-Galerie und Nachrichtenverlauf |
+| `logbook.py`, `logbook_gui.py` | QSO-Datenmodell, austauschbare Logbuch-Anbindung und ADIF-Dialog |
 | `cli.py`, `gui.py` | Kommandozeile und Desktop-Oberfläche |
 | `i18n.py`, `theme.py` | Übersetzungen, Sprachauswahl und Tk-Gestaltung im HamRig-Stil |
 

@@ -311,6 +311,9 @@ DE.update({
     "radio_release_error": "PTT aus unbestätigt · Funkgerät prüfen",
 })
 
+from .studio_i18n import STRINGS
+EN.update({key: pair[0] for key, pair in STRINGS.items()})
+DE.update({key: pair[1] for key, pair in STRINGS.items()})
 TRANSLATIONS = {"en": EN, "de": DE}
 
 

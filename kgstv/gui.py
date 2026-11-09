@@ -10,20 +10,22 @@ from PIL import Image, ImageTk
 from . import __version__, theme
 from .audio import save_wav
 from .cli import decode_file
-from .i18n import TRANSLATIONS, load_language, save_language, settings_file, translate
-from .imagecodec import prepare_image
+from .i18n import TRANSLATIONS, load_language, save_language, settings_file, translate, load_settings, save_settings
 from .modem import modulate
 from .protocol import SCALES, text_frame
 from .session import image_frames, request_frames
 from .hamlib import PTTReleaseError
 from .radio_gui import RadioPanel
+from .image_document import Document, load_image
+from .library import Library, message_line, utc_now
+from .library_gui import GalleryWindow, HistoryWindow, STORAGE_ERRORS
 
 
 class Application:
     def __init__(self, root, *, settings_path=None, language=None):
         self.root = root
         root.title("Open KG-STV")
-        root.geometry(f"1120x{min(900, root.winfo_screenheight()-60)}")
+        root.geometry(f"1120x{min(1000, root.winfo_screenheight()-60)}")
         root.minsize(940, 640)
         self.settings_path = Path(settings_path) if settings_path is not None else settings_file()
         self.language = language or load_language(self.settings_path)
@@ -46,9 +48,26 @@ class Application:
         self.cancelled = threading.Event()
         self.live = None
         self.tx_image = self.rx_image = self.rx_summary = None
+        self.tx_document = None
+        self.tx_context = {}
+        self.studio_windows = []
+        self._archived_rx = None
+        self._recent_messages = []
+        self.library = None
+        storage_error = None
+        try:
+            self.library = Library(self.settings_path.parent/"library.sqlite3")
+            self.tx_document = self.library.draft()
+            self.tx_context = self.library.draft_context()
+            if self.tx_document is not None:
+                self.tx_image = self.tx_document.render(self.tx_context)
+            self._recent_messages = list(reversed(self.library.messages(limit=200)))
+        except STORAGE_ERRORS as exc:
+            storage_error = str(exc)
         self.requested_blocks = []
         self.last_preview = 0
-        self.callsign = tk.StringVar(root, "")
+        stored = load_settings(self.settings_path)
+        self.callsign = tk.StringVar(root, str(stored.get("callsign", "")))
         self.mode = tk.StringVar(root, "MSK")
         self.fec = tk.BooleanVar(root, False)
         self.scale = tk.StringVar(root, "1.0")
@@ -66,9 +85,14 @@ class Application:
         self.activity = "idle"
         self._bindings = []
         self._idle_buttons = []
-        self.page = "workspace"
         self._build()
+        self._restore_audio(stored.get("audio", {}))
+        if self.tx_image is not None:
+            self.tx_preview.show(self.tx_image)
+        self._render_messages()
         self._translate_widgets()
+        if storage_error:
+            self._set_status("library_error")
         self._sync_controls()
         self._poll_after = root.after(80, self._poll)
         root.protocol("WM_DELETE_WINDOW", self.close)
@@ -119,6 +143,9 @@ class Application:
             button.pack(side="left", padx=2)
             self.language_buttons[code] = button
         self._button(header, "beta", self.about).pack(side="right", padx=24)
+        self.setup_button = ttk.Button(header, text="⚙", width=3, command=self.open_setup)
+        self.setup_button.pack(side="right", padx=(12, 0))
+        self._button(header, "log_qso", self.open_logbook, style="Receive.TButton").pack(side="right")
 
         # The footer remains reachable when a small window scrolls the workspace.
         footer = tk.Frame(self.root, bg=theme.BG, padx=22, pady=12)
@@ -140,17 +167,7 @@ class Application:
         status_label.pack(side="left", fill="x", expand=True, padx=(0, 12))
         status_label.bind("<Configure>", lambda event:status_label.configure(wraplength=max(1, event.width)))
 
-        navigation = tk.Frame(self.root, bg=theme.BG, padx=22)
-        navigation.pack(fill="x", pady=(0, 12))
-        self.nav_buttons = {}
-        for page in ("workspace", "audio_tab", "radio_tab"):
-            button = self._button(navigation, page, lambda page=page:self.show_page(page))
-            button.pack(side="left", padx=(0, 8))
-            self.nav_buttons[page] = button
-        ttk.Button(navigation, textvariable=self.radio_status, command=lambda:self.show_page("radio_tab"),
-                   style="Link.TButton").pack(side="right")
-
-        viewport = tk.Frame(self.root, bg=theme.BG)
+        viewport = self.viewport = tk.Frame(self.root, bg=theme.BG)
         viewport.pack(fill="both", expand=True)
         scrollbar = ttk.Scrollbar(viewport, orient="vertical")
         scrollbar.pack(side="right", fill="y")
@@ -165,45 +182,61 @@ class Application:
         self.root.bind("<MouseWheel>", self._wheel, add="+")
         self.canvas.bind("<Button-4>", lambda event:self.canvas.yview_scroll(-3, "units"))
         self.canvas.bind("<Button-5>", lambda event:self.canvas.yview_scroll(3, "units"))
-        self.pages = {key:tk.Frame(self.outer, bg=theme.BG) for key in ("workspace", "audio_tab", "radio_tab")}
-        self._build_workspace(self.pages["workspace"])
-        self._build_audio(self.pages["audio_tab"])
-        self.radio_panel = RadioPanel(self, self.pages["radio_tab"])
-        self.show_page("workspace")
+        self.setup_window = tk.Toplevel(self.root, bg=theme.BG)
+        self.setup_window.withdraw()
+        self.setup_window.geometry(f"960x{min(820, self.root.winfo_screenheight()-80)}")
+        self.setup_window.minsize(900, 540)
+        self.setup_window.protocol("WM_DELETE_WINDOW", self.close_setup)
+        foot = tk.Frame(self.setup_window, bg=theme.BG, padx=18, pady=12)
+        foot.pack(side="bottom", fill="x")
+        self._button(foot, "setup_save", self.close_setup, style="Primary.TButton").pack(side="right")
+        scroll = ttk.Scrollbar(self.setup_window)
+        scroll.pack(side="right", fill="y")
+        setup_canvas = tk.Canvas(self.setup_window, bg=theme.BG, highlightthickness=0, yscrollcommand=scroll.set)
+        setup_canvas.pack(fill="both", expand=True)
+        scroll.configure(command=setup_canvas.yview)
+        setup_body = tk.Frame(setup_canvas, bg=theme.BG, padx=18, pady=16)
+        setup_id = setup_canvas.create_window(0, 0, window=setup_body, anchor="nw")
+        setup_body.bind("<Configure>", lambda e:setup_canvas.configure(scrollregion=setup_canvas.bbox("all")))
+        setup_canvas.bind("<Configure>", lambda e:setup_canvas.itemconfigure(setup_id, width=e.width))
+        self.setup_window.bind("<MouseWheel>", lambda e:setup_canvas.yview_scroll(-1 if e.delta>0 else 1, "units")
+                               if not isinstance(e.widget, (ttk.Combobox, tk.Text)) else None)
+        self.radio_panel = RadioPanel(self, setup_body, self.outer)
+        self._build_audio(setup_body)
+        self._build_workspace(self.outer)
 
     def _build_workspace(self, parent):
-        controls = theme.Card(parent)
+        controls = theme.Card(parent, padding=10)
         controls.pack(fill="x", pady=(0, 12))
         body = controls.body
-        for column, key in ((0, "callsign"), (1, "modulation"), (3, "scale")):
-            self._label(body, key).grid(row=0, column=column, sticky="w", pady=(0, 4))
-        ttk.Entry(body, textvariable=self.callsign, width=16).grid(row=1, column=0, padx=(0, 16))
+        for column, key in ((0, "callsign"), (2, "modulation"), (5, "scale_short")):
+            self._label(body, key).grid(row=0, column=column, sticky="w", padx=(0, 7))
+        ttk.Entry(body, textvariable=self.callsign, width=12).grid(row=0, column=1, padx=(0, 16))
         ttk.Combobox(body, textvariable=self.mode, values=("MSK", "4L-FSK"), width=10,
-                     state="readonly").grid(row=1, column=1, padx=(0, 16))
+                     state="readonly").grid(row=0, column=3, padx=(0, 16))
         check = ttk.Checkbutton(body, variable=self.fec, text=self.tr("fec"))
-        check.grid(row=1, column=2, padx=(0, 20))
+        check.grid(row=0, column=4, padx=(0, 16))
         self._bindings.append((check, "fec"))
         ttk.Combobox(body, textvariable=self.scale, values=[str(x) for x in SCALES], width=8,
-                     state="readonly").grid(row=1, column=3)
-        body.columnconfigure(4, weight=1)
-        label = self._label(body, "format")
-        label.configure(fg=theme.DIM, font=(self.mono, 9))
-        label.grid(row=1, column=4, sticky="e", padx=(12, 0))
+                     state="readonly").grid(row=0, column=6)
         panels = tk.Frame(parent, bg=theme.BG)
         panels.pack(fill="x", pady=(0, 12))
         panels.columnconfigure((0, 1), weight=1, uniform="images")
         tx, rx = theme.Card(panels), theme.Card(panels)
         tx.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
         rx.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
-        self._heading(tx.body, "transmit")
+        tx_header = tk.Frame(tx.body, bg=theme.PANEL)
+        tx_header.pack(fill="x")
+        self._heading(tx_header, "transmit").pack_configure(side="left")
+        self._button(tx_header, "edit_image", self.open_editor, style="Link.TButton").pack(side="right")
         rx_header = tk.Frame(rx.body, bg=theme.PANEL)
         rx_header.pack(fill="x")
         self._heading(rx_header, "receive").pack_configure(side="left")
         self.block_badge = tk.Label(rx_header, bg=theme.PANEL, fg=theme.DIM, font=(self.mono, 10))
         self.block_badge.pack(side="right")
-        self.tx_preview = theme.ImagePreview(tx.body, self.sans)
+        self.tx_preview = theme.ImagePreview(tx.body, self.sans, height=160)
         self.tx_preview.pack(fill="x")
-        self.rx_preview = theme.ImagePreview(rx.body, self.sans)
+        self.rx_preview = theme.ImagePreview(rx.body, self.sans, height=160)
         self.rx_preview.pack(fill="x")
         self.tx_caption = tk.Label(tx.body, bg=theme.PANEL, fg=theme.MUTED, font=(self.sans, 9))
         self.tx_caption.pack(anchor="w", pady=(8, 10))
@@ -229,16 +262,20 @@ class Application:
         self.repair_button = self._button(tx_repair, "repair_response", lambda:self.encode("repair", False),
                                            style="Link.TButton", idle=True)
         self.repair_button.pack(side="left")
+        self._button(tx_repair, "gallery", self.open_gallery, style="Link.TButton").pack(side="right")
         self.bsr_button = self._button(rx_repair, "repair_request", lambda:self.encode("bsr", False),
                                         style="Link.TButton", idle=True)
         self.bsr_button.pack(side="left")
-        for body in (tx_repair, rx_repair):
+        for body in (rx_repair,):
             label = self._label(body, "experimental")
             label.configure(fg=theme.DIM, font=(self.sans, 8))
             label.pack(side="right")
-        messages = theme.Card(parent)
-        messages.pack(fill="x", pady=(0, 2))
-        self._heading(messages.body, "messages")
+        messages = theme.Card(self.root, padding=10)
+        messages.pack(side="bottom", fill="x", padx=22, pady=(8, 0), before=self.viewport)
+        message_header = tk.Frame(messages.body, bg=theme.PANEL)
+        message_header.pack(fill="x")
+        self._heading(message_header, "messages").pack_configure(side="left")
+        self._button(message_header, "history_open", self.open_history, style="Link.TButton").pack(side="right")
         compose = tk.Frame(messages.body, bg=theme.PANEL)
         compose.pack(fill="x", pady=(0, 10))
         self._label(compose, "compose").pack(side="left", padx=(0, 10))
@@ -248,10 +285,17 @@ class Application:
         self._button(compose, "text_wav", lambda:self.encode("text", False), idle=True).pack(side="right", padx=6)
         self.message = ttk.Entry(compose)
         self.message.pack(side="left", fill="x", expand=True)
-        self.log = tk.Text(messages.body, height=3, wrap="word", state="disabled", font=(self.mono, 10),
+        log_frame = tk.Frame(messages.body, bg=theme.PANEL)
+        log_frame.pack(fill="x")
+        scroll = ttk.Scrollbar(log_frame)
+        scroll.pack(side="right", fill="y")
+        self.log = tk.Text(log_frame, height=7, wrap="word", state="disabled", font=(self.mono, 10),
                            bg=theme.WELL, fg=theme.TEXT, insertbackground=theme.TEXT, relief="flat",
-                           highlightthickness=1, highlightbackground=theme.BORDER, padx=10, pady=8)
-        self.log.pack(fill="x")
+                           highlightthickness=1, highlightbackground=theme.BORDER, padx=10, pady=8,
+                           yscrollcommand=scroll.set)
+        self.log.pack(fill="x", expand=True)
+        scroll.configure(command=self.log.yview)
+        self.log.tag_configure("TX", foreground=theme.BLUE)
 
     def _build_audio(self, parent):
         devices = theme.Card(parent)
@@ -300,13 +344,52 @@ class Application:
         if self.outer.winfo_height() > self.canvas.winfo_height():
             self.canvas.yview_scroll(-1 if event.delta > 0 else 1, "units")
 
-    def show_page(self, page):
-        self.pages[self.page].pack_forget()
-        self.page = page
-        self.pages[page].pack(fill="x")
-        for key, button in self.nav_buttons.items():
-            button.configure(style="Receive.TButton" if key == page else "TButton")
-        self.canvas.yview_moveto(0)
+    def open_setup(self):
+        self.setup_window.deiconify()
+        self.setup_window.lift()
+
+    def _restore_audio(self, stored):
+        if not isinstance(stored, dict):
+            return
+        for key in ("ptt_port", "ptt_line", "frequency"):
+            value = stored.get(key)
+            if isinstance(value, str):
+                getattr(self, key).set(value)
+        # PortAudio accepts stable device-name substrings as well as indexes.
+        for key in ("input", "output"):
+            name = stored.get(key)
+            if isinstance(name, str) and name:
+                self.device_ids[name] = name
+                getattr(self, key+"_device").set(name)
+                getattr(self, key+"_combo").configure(values=(self.tr("default_device"), name))
+
+    def save_operating_settings(self):
+        def device_name(variable):
+            value = self.device_ids.get(variable.get())
+            if isinstance(value, int) and 0 <= value < len(self._devices):
+                return self._devices[value]["name"]
+            return value if isinstance(value, str) else ""
+        save_settings(self.settings_path, {"callsign":self.callsign.get().strip(), "audio":{
+            "input":device_name(self.input_device), "output":device_name(self.output_device),
+            "ptt_port":self.ptt_port.get(), "ptt_line":self.ptt_line.get(), "frequency":self.frequency.get()}})
+
+    def close_setup(self):
+        if not self.radio_panel.save():
+            return
+        try:
+            self.save_operating_settings()
+        except OSError as exc:
+            self._error("preference_error", exc)
+            return
+        self.setup_window.withdraw()
+
+    def open_logbook(self):
+        from .logbook_gui import QsoWindow
+        existing = next((w for w in self.studio_windows if isinstance(w, QsoWindow)), None)
+        if existing:
+            existing.window.lift()
+            return existing
+        return QsoWindow(self)
 
     def set_language(self, language, *, persist=True):
         if language not in TRANSLATIONS:
@@ -332,6 +415,9 @@ class Application:
         self._set_status(*self._status_message)
         self._set_activity(self.activity)
         self.radio_panel.refresh_labels()
+        self.setup_window.title(self.tr("setup_title"))
+        for window in list(self.studio_windows):
+            window.translate()
 
     def _image_labels(self):
         self.tx_caption.configure(text=self.tr("image_ready" if self.tx_image is not None else "no_image"))
@@ -402,11 +488,86 @@ class Application:
                     filetypes=[(self.tr("images_filter"), "*.png *.jpg *.jpeg *.bmp *.gif"), (self.tr("all_filter"), "*.*")])
         if path:
             try:
-                self.tx_image = prepare_image(path)
-                self._show(self.tx_preview, self.tx_image)
+                self.set_tx_document(Document.from_image(load_image(path), Path(path).stem))
                 self._set_status("image_opened", {"name":Path(path).name})
             except Exception as exc:
                 self._error("open_image_error", exc)
+
+    def set_tx_document(self, document, context=None):
+        context = context or self.tx_context
+        rendered = document.render(context)
+        if self.library:
+            self.library.save_draft(document, context)
+        self.tx_document, self.tx_context = document.clone(), dict(context)
+        self.tx_image = rendered
+        self._show(self.tx_preview, rendered)
+
+    def open_editor(self, document=None):
+        from .editor_gui import ImageEditor
+        if document is None:
+            existing = next((w for w in self.studio_windows if isinstance(w, ImageEditor)), None)
+            if existing:
+                existing.window.deiconify()
+                existing.window.lift()
+                return existing
+        return ImageEditor(self, document)
+
+    def open_gallery(self):
+        if self.library:
+            return GalleryWindow(self)
+        self._error("library_error")
+
+    def open_history(self):
+        if self.library:
+            existing = next((w for w in self.studio_windows if isinstance(w, HistoryWindow)), None)
+            if existing:
+                existing.window.lift()
+                return existing
+            return HistoryWindow(self)
+        self._error("library_error")
+
+    def refresh_library_windows(self):
+        for window in list(self.studio_windows):
+            if isinstance(window, GalleryWindow):
+                window.refresh()
+
+    def _render_messages(self):
+        position = self.log.yview()
+        following = not self.log.get("1.0", "end-1c") or not position or position[1] >= .99
+        self.log.configure(state="normal")
+        self.log.delete("1.0", "end")
+        for item in self._recent_messages:
+            self.log.insert("end", message_line(item), item["direction"])
+        self.log.configure(state="disabled")
+        if following:
+            self.log.see("end")
+        elif position:
+            self.log.yview_moveto(position[0])
+
+    def _record_message(self, text, direction="RX"):
+        item = dict(text=text, direction=direction, created=utc_now())
+        try:
+            if self.library:
+                item = self.library.add_message(text, direction)
+        except STORAGE_ERRORS:
+            self._set_status("library_error")
+        self._recent_messages.append(item)
+        self._recent_messages = self._recent_messages[-200:]
+        self._render_messages()
+        for window in list(self.studio_windows):
+            if isinstance(window, HistoryWindow):
+                window.refresh()
+
+    def _archive_image(self, image, summary, kind):
+        if not self.library:
+            return
+        call = summary.get("callsign", "") or self.tr("unknown")
+        name = self.tr("rx_archive", call=call, blocks=summary.get("good_blocks", 0)) if kind == "rx" else self.tr("tx_archive", call=call)
+        try:
+            self.library.add_image(name, image, kind=kind, metadata=summary)
+            self.refresh_library_windows()
+        except STORAGE_ERRORS:
+            self._set_status("library_error")
 
     def save_image(self):
         if self.rx_image is None:
@@ -453,6 +614,11 @@ class Application:
         if im is not None and (now-self.last_preview > .15 or im.finished):
             self.last_preview = now
             self.events.put(("image", (im.pixels.copy(), im.summary())))
+        if im is not None and frame.header.com in (3, 5) and im.finished and im.good.any():
+            signature = (int(im.good.sum()), im.aborted, im.codec_errors)
+            if self._archived_rx is None or self._archived_rx[0] is not im or self._archived_rx[1] != signature:
+                self._archived_rx = (im, signature)
+                self.events.put(("archive_rx", (im.pixels.copy(), im.summary())))
 
     def _frequency(self):
         try:
@@ -555,7 +721,12 @@ class Application:
                 play_audio(audio, device=device, port=port or None, ptt_line=line,
                            cancelled=lambda:self.cancelled.is_set() or (radio is not None and not radio.connected),
                            **transmit_options)
-                self._post_status("transmitted")
+                if not self.cancelled.is_set() and (radio is None or radio.connected):
+                    if kind == "text":
+                        self.events.put(("sent_text", call+">"+message))
+                    elif kind == "image":
+                        self.events.put(("archive_tx", (image.copy(), {"callsign":call})))
+                    self._post_status("transmitted")
             else:
                 save_wav(path, audio)
                 self._post_status("wav_saved", seconds=len(audio)/48000, path=path)
@@ -575,6 +746,13 @@ class Application:
                 outputs.append(name)
         for combo, variable, names, index in ((self.input_combo, self.input_device, inputs, selected[0]),
                                                (self.output_combo, self.output_device, outputs, selected[1])):
+            if isinstance(index, str):
+                matching = next((name for name in names if name.endswith(": "+index)), None)
+                if matching:
+                    index = self.device_ids[matching]
+                else:
+                    names.append(index)
+                    self.device_ids[index] = index
             combo.configure(values=names)
             variable.set(next((name for name in names if self.device_ids[name] == index), default))
 
@@ -659,10 +837,13 @@ class Application:
                     if not self.closing:
                         self._error(*data)
                 elif event == "text":
-                    self.log.configure(state="normal")
-                    self.log.insert("end", data+"\n")
-                    self.log.see("end-2c")
-                    self.log.configure(state="disabled")
+                    self._record_message(data)
+                elif event == "sent_text":
+                    self._record_message(data, "TX")
+                elif event in ("archive_rx", "archive_tx"):
+                    source, summary = data
+                    self._archive_image(Image.fromarray(source) if event == "archive_rx" else source,
+                                        summary, "rx" if event == "archive_rx" else "tx")
                 elif event == "request":
                     self.requested_blocks = data
                     self._set_status("requested", {"count":len(data)})
@@ -680,8 +861,19 @@ class Application:
     def close(self):
         if self.closing:
             return
+        for window in list(self.studio_windows):
+            window.close()
+            if window in self.studio_windows:
+                return
+        try:
+            self.save_operating_settings()
+        except OSError as exc:
+            self._error("preference_error", exc)
+            return
         self.closing = True
         self.stop()
+        self.setup_window.withdraw()
+        self.radio_panel.tuning_window.withdraw()
         self.root.withdraw()
         def wait_for_cleanup():
             if not self.closing:

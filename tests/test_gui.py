@@ -97,7 +97,7 @@ class DesktopTests(unittest.TestCase):
         app._devices = [{"name":"Test input", "max_input_channels":1, "max_output_channels":0},
                         {"name":"Test output", "max_input_channels":0, "max_output_channels":2}]
         app._refresh_device_labels((0, 1))
-        app.show_page("audio_tab")
+        app.open_setup()
         receiver = Mock()
         app.live = receiver
         app._set_activity("rx")
@@ -107,7 +107,7 @@ class DesktopTests(unittest.TestCase):
             save.assert_called_once_with(self.settings, "de")
         self.assertEqual(app.language, "de")
         self.assertEqual(load_language(self.settings), "de")
-        self.assertEqual(app.page, "audio_tab")
+        self.assertNotEqual(app.setup_window.state(), "withdrawn")
         self.assertIs(app.live, receiver)
         receiver.stop.assert_not_called()
         self.assertEqual(app.activity_label.cget("text"), "● EMPFANG")
@@ -117,7 +117,7 @@ class DesktopTests(unittest.TestCase):
                          ("TEST", "4L-FSK", True, "0.5"))
         self.assertEqual((app.frequency.get(), app.ptt_port.get(), app.ptt_line.get()), ("70", "COM8", "dtr"))
         self.assertEqual(app.message.get(), "CQ de TEST")
-        self.assertEqual(app.log.get("1.0", "end-1c"), "TEST>received 日本語\n")
+        self.assertIn("RX  TEST>received 日本語\n", app.log.get("1.0", "end-1c"))
         self.assertEqual(app.requested_blocks, [2, 5])
         self.assertIs(app.tx_preview.source, app.tx_image)
         self.assertIs(app.rx_preview.source, app.rx_image)
