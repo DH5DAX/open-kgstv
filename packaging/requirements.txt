@@ -1,0 +1,13 @@
+# Shared, pinned Windows x64 / Linux x64 / Linux ARM64 build environment.
+numpy==2.4.6
+scipy==1.17.1
+Pillow==12.3.0
+av==17.1.0
+sounddevice==0.5.5
+pyserial==3.5
+cffi==2.1.0
+pycparser==3.0
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.8
+setuptools==83.0.0
+packaging==26.2

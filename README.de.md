@@ -62,7 +62,26 @@ Audio-Wasserfall. Der Wasserfall zeigt hier ein pausiertes, lokal erzeugtes MSK-
 
 ![ADIF-QSO-Dialog](docs/screenshots/qso-log.jpg)
 
-## Installation und Start
+## Direkt herunterladen
+
+[Unsignierte Standalone-Vorschau v0.1.0](https://github.com/DH5DAX/open-kgstv/releases/tag/v0.1.0)
+— entpacken und starten, ohne Python-Installation:
+
+| System | Download |
+|---|---|
+| Windows 10/11 x64 | [Windows-ZIP](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-windows-x64.zip) |
+| Linux x64 ab Debian 12 / Ubuntu 24.04 oder kompatiblem Desktop | [Linux-x64-Paket](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-linux-x64.tar.gz) |
+| 64-Bit Raspberry Pi OS ab Bookworm / kompatibler ARM64-Desktop | [Raspberry-Pi-/ARM64-Paket](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-linux-arm64.tar.gz) |
+
+Unter Windows `OpenKGSTV.exe` doppelklicken, unter Linux `./OpenKGSTV` starten.
+Jedes Archiv enthält eine Programmdatei sowie Kurzanleitung, Lizenzhinweise und
+Build-Metadaten. [Prüfsummen](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/SHA256SUMS.txt)
+und [Build-Anleitung](packaging/BUILDING.md) sind verfügbar. Die Raspberry-Datei
+benötigt ein 64-Bit-System; ein Test auf physischer Raspberry-Hardware steht aus.
+Hamlib bleibt eine separate optionale Installation oder ein Netzwerkdienst.
+Linux benötigt einen grafischen Desktop mit den üblichen System-/Audiobibliotheken.
+
+## Installation und Start aus dem Quellcode
 
 Python 3.11 oder neuer; lokal geprüft mit Python 3.13. Tk muss installiert sein
 (bei Python für Windows enthalten; auf manchen Linux-Systemen `python3-tk`).
@@ -176,7 +195,7 @@ Der Download ist ausdrücklich, hashgeprüft und umfasst nur öffentliche
 Audio-/Bild-Testdaten. Ohne die Aufnahmen werden die Originalsignal-Tests als
 übersprungen gemeldet. Die Fremddateien unter `research/reference/` sind
 gitignoriert und werden nicht im Python-Paket ausgeliefert.
-Am 9. November 2026 bestanden lokal alle 94 Tests, einschließlich Hamlib-Dummy,
+Am 9. November 2026 bestanden lokal alle 99 Tests, einschließlich Hamlib-Dummy,
 CAT-PTT, Bildeditor, Vorlagen, Galerie, Chat-Persistenz, kompaktem deutschem Layout,
 Frequenzwahl, ADIF-Schreiben einschließlich Wiederholung und Fehlerfällen sowie
 Wasserfall-Frequenz-/Pegelgenauigkeit, Lücken, Clipping und Empfangssteuerung. Die Oberflächentests benötigen

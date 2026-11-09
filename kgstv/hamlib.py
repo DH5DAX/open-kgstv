@@ -10,9 +10,11 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import threading
 import time
+from .runtime import external_environment, external_libraries
 
 
 class HamlibError(RuntimeError):
@@ -69,6 +71,12 @@ def find_rigctld():
     found = shutil.which("rigctld")
     if found:
         return found
+    if getattr(sys, 'frozen', False):
+        name = 'rigctld.exe' if sys.platform == 'win32' else 'rigctld'
+        base = Path(sys.executable).resolve().parent
+        for local in (base/name, base/'hamlib'/'bin'/name):
+            if local.is_file():
+                return str(local)
     # Optional checkout-local installation made by tools/fetch_hamlib.py.
     local = Path(__file__).resolve().parents[1]/"outputs"/"hamlib"/"hamlib-w64-4.7.2"/"bin"/"rigctld.exe"
     return str(local) if local.is_file() else "rigctld"
@@ -83,8 +91,10 @@ def executable_path(value):
 
 
 def list_models(executable):
-    result = subprocess.run([executable_path(executable), "--list"], capture_output=True,
-                            text=True, errors="replace", timeout=15, **_hidden_process())
+    with external_libraries():
+        result = subprocess.run([executable_path(executable), "--list"], capture_output=True,
+                                text=True, errors="replace", timeout=15,
+                                env=external_environment(), **_hidden_process())
     if result.returncode:
         raise HamlibError(result.stderr.strip() or f"Could not list Hamlib models (exit {result.returncode})")
     models = []
@@ -253,8 +263,9 @@ class LocalDaemon:
             args += ["-c", str(int(config.civ, 16))]
         self.log = tempfile.TemporaryFile()
         try:
-            self.process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=self.log,
-                                            stderr=self.log, **_hidden_process())
+            with external_libraries():
+                self.process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=self.log,
+                                                stderr=self.log, env=external_environment(), **_hidden_process())
         except Exception:
             self.log.close()
             raise

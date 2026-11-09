@@ -5,7 +5,7 @@ Referenzziel: **KG-STV 1.0.1 build 004**, EXE-SHA-256
 
 ## Nachweise und Grenzen
 
-Lokaler Prüfstand am 9. November 2026: 94 automatische Tests bestanden unter
+Lokaler Prüfstand am 9. November 2026: 99 automatische Tests bestanden unter
 Python 3.13. Zusätzlich wurde ein vollständiges Bild über den WAV-Export der
 Oberfläche mit 4L-FSK/CONV erzeugt und wieder empfangen: 300/300 Bildblöcke,
 336 gültige Nutzdatenpakete, keine CRC-Fehler. Das Live-Fensterverhalten und

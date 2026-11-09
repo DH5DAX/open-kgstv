@@ -1,0 +1,5 @@
+**
+!packaging/
+!packaging/requirements.txt
+!packaging/Dockerfile
+!packaging/runtime.Dockerfile

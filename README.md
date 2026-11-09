@@ -73,7 +73,26 @@ The same interface in German, after switching without restarting:
 
 ![German operating interface with images preserved](docs/screenshots/operating-de.jpg)
 
-## Install and run
+## Download and run
+
+[Unsigned standalone preview v0.1.0](https://github.com/DH5DAX/open-kgstv/releases/tag/v0.1.0)
+— unpack and start, without installing Python:
+
+| System | Download |
+|---|---|
+| Windows 10/11 x64 | [Windows ZIP](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-windows-x64.zip) |
+| Linux x64, Debian 12 / Ubuntu 24.04 or newer compatible desktop | [Linux x64 package](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-linux-x64.tar.gz) |
+| 64-bit Raspberry Pi OS Bookworm or newer / compatible ARM64 desktop | [Raspberry Pi / ARM64 package](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/OpenKGSTV-0.1.0-linux-arm64.tar.gz) |
+
+Double-click `OpenKGSTV.exe` on Windows; run `./OpenKGSTV` on Linux.
+Each archive contains a single executable plus README, licence notices and
+build metadata. [SHA-256 checksums](https://github.com/DH5DAX/open-kgstv/releases/download/v0.1.0/SHA256SUMS.txt)
+and [build instructions](packaging/BUILDING.md) are available. The binaries are
+unsigned; ARM64 requires a 64-bit OS. Hamlib remains a separate optional
+installation or network service. Linux requires a graphical desktop and its
+usual system/audio libraries. Physical Raspberry Pi testing remains pending.
+
+## Install and run from source
 
 Requires **Python 3.11 or newer**; tested locally with Python 3.13. Tk must be
 available: it is included with standard Python installations on Windows, while
@@ -208,7 +227,7 @@ behavior has not yet been validated against the running original application.
 | BSR and all compression scales against the original | Pending |
 | Live audio and PTT on radio hardware | Implemented, not hardware-tested |
 
-94 automated tests passed locally on November 9, 2026, including Hamlib protocol,
+99 automated tests passed locally on November 9, 2026, including Hamlib protocol,
 PTT failure handling, real Hamlib Dummy control, language switching, saved
 profiles, GUI WAV export, layered templates, library/history persistence,
 compact German layouts, frequency presets, ADIF append/retry/failure cases and
