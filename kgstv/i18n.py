@@ -212,6 +212,105 @@ DE = {
     "demo_text": "Lokaler MSK-Audiotest · {count} Nachrichten · CRC gültig",
 }
 
+EN.update({
+    "radio_tab": "Radio",
+    "radio_connect": "Connect",
+    "radio_disconnect": "Disconnect",
+    "radio_frequency": "Frequency (MHz)",
+    "radio_set_frequency": "Set frequency",
+    "radio_mode": "Radio mode",
+    "radio_bandwidth": "Filter (Hz)",
+    "radio_set_mode": "Set mode",
+    "radio_control_hint": "Readback follows the radio. Frequency and mode change only when you press Set. Filter 0 uses the radio default.",
+    "radio_connection": "Hamlib connection",
+    "radio_local": "Local radio / USB",
+    "radio_network": "Existing rigctld server",
+    "radio_ic7610": "IC-7610 USB profile",
+    "radio_executable": "Hamlib rigctld",
+    "radio_browse": "Browse…",
+    "radio_models": "Load models",
+    "radio_model": "Radio model / Hamlib ID",
+    "radio_cat_port": "CAT port / device",
+    "radio_ports": "Refresh ports",
+    "radio_baud": "Baud rate",
+    "radio_civ": "CI-V (hex)",
+    "radio_host": "Server address",
+    "radio_tcp_port": "TCP port",
+    "radio_save": "Save radio profile",
+    "radio_setup_hint": "IC-7610: select its USB CI-V COM port and match the radio's baud rate. Set DATA1 MOD to USB for USB-D1 on the radio; select its USB soundcard under Audio & PTT. Connection starts only when you press Connect.",
+    "radio_ptt": "Transmit control",
+    "radio_ptt_serial": "Audio / serial RTS-DTR",
+    "radio_ptt_hamlib": "Hamlib CAT PTT",
+    "radio_force_rx": "PTT off / RX",
+    "radio_lead": "TX lead-in (ms)",
+    "radio_tail": "TX tail (ms)",
+    "radio_ptt_hint": "Hamlib PTT follows Send and Stop and overrides the serial PTT port. WAV export never activates PTT. With Audio / serial, an empty serial port means audio only.",
+    "radio_invalid_delay": "Enter PTT delays between 0 and 10000 milliseconds.",
+    "radio_saved": "Radio profile saved",
+    "radio_config_error": "Check the radio connection settings.",
+    "radio_preset_loaded": "IC-7610 profile loaded · select the USB CI-V port and check the baud rate",
+    "radio_connecting": "Connecting to the radio…",
+    "radio_invalid_frequency": "Enter a positive radio frequency in MHz, for example 14.230.",
+    "radio_not_connected": "Connect Hamlib before sending, wait for radio operations to finish and resolve any PTT release error.",
+    "radio_connection_lost": "Radio connection lost · reconnect before sending",
+    "radio_ready": "Hamlib connected · frequency and mode are read from the radio",
+    "radio_offline": "Radio disconnected",
+    "radio_ptt_released": "PTT off acknowledged",
+    "radio_models_loaded": "Loaded {count} Hamlib radio models",
+    "radio_ports_loaded": "Found {count} serial ports",
+    "radio_error": "Hamlib radio operation failed.",
+    "radio_release_error": "PTT off unconfirmed · check the radio",
+})
+DE.update({
+    "radio_tab": "Funkgerät",
+    "radio_connect": "Verbinden",
+    "radio_disconnect": "Trennen",
+    "radio_frequency": "Frequenz (MHz)",
+    "radio_set_frequency": "Frequenz setzen",
+    "radio_mode": "Betriebsart",
+    "radio_bandwidth": "Filter (Hz)",
+    "radio_set_mode": "Modus setzen",
+    "radio_control_hint": "Die Anzeige folgt dem Funkgerät. Frequenz und Betriebsart ändern sich erst beim Setzen. Filter 0 verwendet den Gerätestandard.",
+    "radio_connection": "Hamlib-Verbindung",
+    "radio_local": "Lokales Funkgerät / USB",
+    "radio_network": "Vorhandener rigctld-Server",
+    "radio_ic7610": "IC-7610-USB-Profil",
+    "radio_executable": "Hamlib rigctld",
+    "radio_browse": "Auswählen…",
+    "radio_models": "Modelle laden",
+    "radio_model": "Funkgerät / Hamlib-ID",
+    "radio_cat_port": "CAT-Port / Gerät",
+    "radio_ports": "Ports aktualisieren",
+    "radio_baud": "Baudrate",
+    "radio_civ": "CI-V (hex)",
+    "radio_host": "Serveradresse",
+    "radio_tcp_port": "TCP-Port",
+    "radio_save": "Funkgeräteprofil speichern",
+    "radio_setup_hint": "IC-7610: USB-CI-V-COM-Port auswählen und Baudrate am Gerät abgleichen. DATA1 MOD für USB-D1 am Gerät auf USB stellen; unter Audio & PTT die USB-Soundkarte wählen. Erst Verbinden startet die Verbindung.",
+    "radio_ptt": "Sendesteuerung",
+    "radio_ptt_serial": "Audio / seriell RTS-DTR",
+    "radio_ptt_hamlib": "Hamlib-CAT-PTT",
+    "radio_force_rx": "PTT aus / RX",
+    "radio_lead": "TX-Vorlauf (ms)",
+    "radio_tail": "TX-Nachlauf (ms)",
+    "radio_ptt_hint": "Hamlib-PTT folgt Senden und Stopp und ersetzt den seriellen PTT-Port. WAV-Export aktiviert kein PTT. Bei Audio / seriell bedeutet ein leerer Port: nur Audio.",
+    "radio_invalid_delay": "PTT-Zeiten zwischen 0 und 10000 Millisekunden eingeben.",
+    "radio_saved": "Funkgeräteprofil gespeichert",
+    "radio_config_error": "Bitte die Funkgeräte-Verbindungseinstellungen prüfen.",
+    "radio_preset_loaded": "IC-7610-Profil geladen · USB-CI-V-Port auswählen und Baudrate prüfen",
+    "radio_connecting": "Verbindung zum Funkgerät wird aufgebaut…",
+    "radio_invalid_frequency": "Eine positive Funkfrequenz in MHz eingeben, zum Beispiel 14,230.",
+    "radio_not_connected": "Vor dem Senden Hamlib verbinden, laufende Geräteaktionen abwarten und eine unbestätigte PTT-Freigabe klären.",
+    "radio_connection_lost": "Funkgeräteverbindung verloren · vor dem Senden neu verbinden",
+    "radio_ready": "Hamlib verbunden · Frequenz und Betriebsart werden vom Funkgerät gelesen",
+    "radio_offline": "Funkgerät nicht verbunden",
+    "radio_ptt_released": "PTT aus bestätigt",
+    "radio_models_loaded": "{count} Hamlib-Funkgerätemodelle geladen",
+    "radio_ports_loaded": "{count} serielle Ports gefunden",
+    "radio_error": "Hamlib-Funkgerätesteuerung fehlgeschlagen.",
+    "radio_release_error": "PTT aus unbestätigt · Funkgerät prüfen",
+})
+
 TRANSLATIONS = {"en": EN, "de": DE}
 
 
@@ -241,19 +340,26 @@ def load_language(path):
 def save_language(path, language):
     if language not in TRANSLATIONS:
         raise ValueError("Unsupported interface language")
-    path = Path(path)
+    save_settings(path, {"language":language})
+
+
+def load_settings(path):
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
     except (OSError, ValueError):
-        data = {}
-    if not isinstance(data, dict):
-        data = {}
-    data["language"] = language
+        return {}
+
+
+def save_settings(path, updates):
+    path = Path(path)
+    data = load_settings(path)
+    data.update(updates)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
-                                         prefix="language-", suffix=".tmp", delete=False) as file:
+                                         prefix="settings-", suffix=".tmp", delete=False) as file:
             temporary = Path(file.name)
             json.dump(data, file, indent=2)
             file.write("\n")

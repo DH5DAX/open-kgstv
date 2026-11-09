@@ -198,6 +198,116 @@ class DesktopTests(unittest.TestCase):
             finally:
                 app.close()
 
+    def wait_for_radio(self):
+        deadline = time.monotonic()+10
+        while self.app.radio_panel.busy and time.monotonic() < deadline:
+            self.root.update()
+            time.sleep(.01)
+        self.assertFalse(self.app.radio_panel.busy, "Radio operation did not finish")
+
+    def test_radio_profile_persists_without_starting_connection(self):
+        from kgstv.i18n import load_settings
+        panel = self.app.radio_panel
+        with patch("kgstv.radio_gui.RadioSession") as session:
+            panel.preset()
+            panel.device.set("COM7")
+            panel.save()
+            self.app.set_language("de")
+            session.assert_not_called()
+        stored = load_settings(self.settings)
+        self.assertEqual(stored["language"], "de")
+        self.assertEqual(stored["radio"]["model"], 3078)
+        self.assertEqual(stored["radio"]["device"], "COM7")
+        self.assertEqual(stored["radio"]["ptt_method"], "hamlib")
+        self.assertEqual(panel.target_mode.get(), "PKTUSB")
+        self.assertTrue(self.app.text_send_button.instate(["disabled"]))
+
+    def test_connected_radio_controls_and_actual_gui_send_use_cat_ptt(self):
+        from tests.test_hamlib import fake_server
+        with fake_server() as (rig, port):
+            panel = self.app.radio_panel
+            panel.connection.set("network")
+            panel.port.set(str(port))
+            panel.ptt_method.set("hamlib")
+            panel.lead_ms.set("0"); panel.tail_ms.set("0")
+            with patch("kgstv.gui.messagebox.showerror") as error:
+                panel.connect()
+                self.wait_for_radio()
+                self.assertTrue(panel.connected)
+                panel.target_frequency.set("7,074")
+                panel.set_frequency()
+                self.wait_for_radio()
+                panel.set_mode()
+                self.wait_for_radio()
+                self.assertEqual((rig.frequency, rig.mode), (7074000, "PKTUSB"))
+                self.app.set_language("de", persist=False)
+                self.assertIn("7.074000 MHz", self.app.radio_status.get())
+                audio, serial = Mock(), Mock()
+                audio.get_stream.return_value.active = False
+                keyed = []
+                audio.play.side_effect = lambda *a, **k:keyed.append(rig.ptt)
+                self.app.callsign.set("TEST")
+                self.app.message.insert(0, "Hamlib GUI test")
+                self.app.ptt_port.set("DO-NOT-OPEN")
+                with patch.dict("sys.modules", {"sounddevice":audio, "serial":serial}):
+                    self.app.encode("text", True)
+                    self.wait_for_worker()
+                self.assertEqual(keyed, [1])
+                self.assertEqual(rig.ptt, 0)
+                serial.Serial.assert_not_called()
+                panel.disconnect()
+                self.wait_for_radio()
+                self.assertIsNone(panel.session)
+                error.assert_not_called()
+
+    def test_radio_validates_only_active_connection_fields(self):
+        panel = self.app.radio_panel
+        panel.model.set("")
+        with self.assertRaises(ValueError):
+            panel.config()
+        panel.baud.set("invalid")
+        panel.connection.set("network")
+        self.assertEqual(panel.config().port, 4532)
+        panel.preset()
+        panel.device.set("COM7")
+        panel.port.set("")
+        self.assertEqual(panel.config().model, 3078)
+
+    def test_uncertain_ptt_connection_cannot_be_replaced(self):
+        panel = self.app.radio_panel
+        old = panel.session = Mock(connected=False, ptt_may_be_on=True)
+        with patch("kgstv.gui.messagebox.showerror") as error, patch("kgstv.radio_gui.RadioSession") as new:
+            panel.connect()
+            error.assert_called_once()
+            new.assert_not_called()
+            self.assertIs(panel.session, old)
+        panel.session = None
+
+    def test_wav_export_does_not_require_selected_hamlib_connection(self):
+        path = Path(self.folder.name)/"offline.wav"
+        self.app.radio_panel.ptt_method.set("hamlib")
+        self.app.callsign.set("TEST")
+        self.app.message.insert(0, "Offline")
+        with patch("kgstv.gui.filedialog.asksaveasfilename", return_value=str(path)), \
+             patch("kgstv.live.play_audio") as play, patch("kgstv.gui.messagebox.showerror") as error:
+            self.app.encode("text", False)
+            self.wait_for_worker()
+            self.assertTrue(path.is_file())
+            play.assert_not_called()
+            error.assert_not_called()
+
+    def test_unconfirmed_ptt_release_is_not_hidden_by_cancellation(self):
+        from kgstv.hamlib import PTTReleaseError
+        def work():
+            self.app.cancelled.set()
+            raise PTTReleaseError("PTT off acknowledgement lost")
+        with patch("kgstv.gui.messagebox.showerror") as error:
+            self.app._worker(work)
+            self.wait_for_worker()
+            self.assertTrue(self.app.radio_panel.release_failed)
+            self.assertEqual(self.app.status.get(), EN["radio_release_error"])
+            error.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

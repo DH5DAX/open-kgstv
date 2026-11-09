@@ -1,6 +1,6 @@
 """Reproducible documentation scenes in the real GUI; no audio devices opened.
 
-Run from the checkout: python tools/screenshot_demo.py image|missing|text
+Run from the checkout: python tools/screenshot_demo.py image|missing|text|radio
 Capture the application window after outputs/screenshots/<scene>.json appears.
 The test card is original project artwork, covered by the project's MIT license.
 """
@@ -44,15 +44,52 @@ def test_card():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("scene", choices=("image", "missing", "text"))
+    parser.add_argument("scene", choices=("image", "missing", "text", "radio"))
     parser.add_argument("--language", choices=("en", "de"), default="en")
+    parser.add_argument("--compact", action="store_true", help="Check the minimum 940x640 layout")
     args = parser.parse_args()
     output = ROOT/"outputs"/"screenshots"
     output.mkdir(parents=True, exist_ok=True)
+    (output/(args.scene+".json")).unlink(missing_ok=True)
 
     root = tk.Tk()
-    app = Application(root, settings_path=output/"settings.json", language=args.language)
+    app = Application(root, settings_path=output/(args.scene+"-settings.json"), language=args.language)
     root.title(f"Open KG-STV | Documentation: {args.scene}")
+    if args.compact:
+        root.geometry("940x640")
+    if args.scene == "radio":
+        root.title("Open KG-STV | Documentation: Hamlib Dummy")
+        panel = app.radio_panel
+        # Only the real Hamlib software simulator; no CAT/audio hardware access.
+        panel.connection.set("local")
+        panel.model.set("1 · Hamlib Dummy")
+        panel.device.set("")
+        panel.baud.set("0")
+        panel.civ.set("")
+        from kgstv.hamlib import find_rigctld
+        executable = Path(find_rigctld())
+        panel.executable.set(str(executable.relative_to(ROOT)) if executable.is_relative_to(ROOT) else str(executable))
+        panel.ptt_method.set("hamlib")
+        panel.target_frequency.set("14.230000")
+        panel.bandwidth.set("2400")
+        app.show_page("radio_tab")
+        def tune():
+            if panel.busy:
+                root.after(100, tune)
+            elif panel.connected:
+                panel._task(lambda:(panel.session.set_frequency(14230000),
+                                    panel.session.set_mode("PKTUSB", 2400)))
+                root.after(100, radio_ready)
+        def radio_ready():
+            if panel.busy:
+                root.after(100, radio_ready)
+            elif panel.connected:
+                (output/"radio.json").write_text(json.dumps({"model":1, "frequency":panel.state.frequency,
+                    "mode":panel.state.mode, "ptt":panel.state.ptt})+"\n", encoding="utf-8")
+        root.after(300, panel.connect)
+        root.after(400, tune)
+        root.mainloop()
+        return
     app.callsign.set("TEST")
     if args.scene != "text":
         app.mode.set("4L-FSK")

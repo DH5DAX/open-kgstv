@@ -5,7 +5,7 @@ Referenzziel: **KG-STV 1.0.1 build 004**, EXE-SHA-256
 
 ## Nachweise und Grenzen
 
-Lokaler Prüfstand am 6. November 2026: 39 automatische Tests bestanden unter
+Lokaler Prüfstand am 9. November 2026: 64 automatische Tests bestanden unter
 Python 3.13. Zusätzlich wurde ein vollständiges Bild über den WAV-Export der
 Oberfläche mit 4L-FSK/CONV erzeugt und wieder empfangen: 300/300 Bildblöcke,
 336 gültige Nutzdatenpakete, keine CRC-Fehler. Das Live-Fensterverhalten und
@@ -13,6 +13,10 @@ PTT-Freigaben bei Fehlern werden mit simulierten Audiogeräten geprüft.
 Hinzu kommen Tests für den Sprachwechsel während laufender Vorgänge, den Erhalt
 der Eingaben und Geräteauswahl, die gespeicherte Sprache sowie WAV-Textexport
 aus der zweisprachigen Oberfläche. Dabei wird keine Funkhardware geöffnet.
+Hamlib wird mit simulierten TCP-Antworten und dem echten Dummy-Backend aus
+Hamlib 4.7.2 geprüft: Frequenz/Betriebsart, CAT-PTT, Verbindungsverlust,
+unbestätigte PTT-Freigabe, Prozessende und gespeicherte Profile. Das
+IC-7610-USB-Profil ist vorbereitet, der physische Gerätetest steht aus.
 
 | Teil | Stand |
 |---|---|
@@ -30,6 +34,7 @@ aus der zweisprachigen Oberfläche. Dabei wird keine Funkhardware geöffnet.
 | BSR über Audio gegen Original | **Ausstehend**; interne Zustands-/Pakettests vorhanden |
 | Alle 16 Skalen gegen Original | **Ausstehend**; eigene Farb-/Codec-Tests vorhanden |
 | Live-Audio und PTT an Hardware | Implementiert, **nicht an Funkhardware getestet** |
+| Hamlib-Frequenz/Betriebsart/CAT-PTT | Softwaretests mit rigctld 4.7.2 bestanden; IC-7610-Hardwaretest ausstehend |
 | Windows-INI, Image-Processor-IPC, Archivdetails | Nicht implementiert |
 | Wasserfall/Augendiagramm | Nicht implementiert |
 

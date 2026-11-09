@@ -1,7 +1,7 @@
 """HamRig-family palette, independently implemented for Tk/ttk.
 
 Visual references: HamRig Portal's hamrig.css and HamRig Rotor's app.css.
-No external logos, fonts or runtime dependencies are bundled.
+Robbie artwork is bundled separately in assets; no fonts are bundled.
 """
 import tkinter as tk
 from tkinter import ttk, font

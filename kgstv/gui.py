@@ -6,7 +6,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from PIL import Image
+from PIL import Image, ImageTk
 from . import __version__, theme
 from .audio import save_wav
 from .cli import decode_file
@@ -15,6 +15,8 @@ from .imagecodec import prepare_image
 from .modem import modulate
 from .protocol import SCALES, text_frame
 from .session import image_frames, request_frames
+from .hamlib import PTTReleaseError
+from .radio_gui import RadioPanel
 
 
 class Application:
@@ -28,6 +30,16 @@ class Application:
         if self.language not in TRANSLATIONS:
             raise ValueError("Unsupported interface language")
         self.sans, self.mono = theme.setup(root)
+        with Image.open(Path(__file__).parent / "assets" / "hamrig-robbie.png") as source:
+            robbie = source.convert("RGBA")
+        self._icons = []
+        for size in (16, 32, 48, 64, 128, 256):
+            icon = robbie.copy()
+            icon.thumbnail((size, size), Image.Resampling.LANCZOS)
+            self._icons.append(ImageTk.PhotoImage(icon, master=root))
+        root.iconphoto(True, *self._icons)
+        robbie.thumbnail((58, 64), Image.Resampling.LANCZOS)
+        self.robbie = ImageTk.PhotoImage(robbie, master=root)
         self.events = queue.Queue()
         self.busy = self.closing = False
         self.worker_thread = None
@@ -49,6 +61,7 @@ class Application:
         self._devices = []
         self.status = tk.StringVar(root)
         self.block_status = tk.StringVar(root)
+        self.radio_status = tk.StringVar(root)
         self._status_message = ("ready", {})
         self.activity = "idle"
         self._bindings = []
@@ -85,11 +98,8 @@ class Application:
     def _build(self):
         header = tk.Frame(self.root, bg=theme.BG, padx=22, pady=12)
         header.pack(fill="x")
-        mark = tk.Canvas(header, width=44, height=44, bg=theme.BG, highlightthickness=0)
+        mark = tk.Label(header, image=self.robbie, bg=theme.BG, borderwidth=0)
         mark.pack(side="left", padx=(0, 12))
-        theme.rounded(mark, 0, 0, 44, 44, 10, fill=theme.CRIMSON, outline="")
-        mark.create_line(7, 23, 13, 23, 17, 11, 22, 34, 28, 16, 32, 23, 37, 23,
-                         fill=theme.TEXT, width=2)
         brand = tk.Frame(header, bg=theme.BG)
         brand.pack(side="left")
         tk.Label(brand, text="Open KG-STV", bg=theme.BG, fg=theme.TEXT,
@@ -133,11 +143,12 @@ class Application:
         navigation = tk.Frame(self.root, bg=theme.BG, padx=22)
         navigation.pack(fill="x", pady=(0, 12))
         self.nav_buttons = {}
-        for page in ("workspace", "audio_tab"):
+        for page in ("workspace", "audio_tab", "radio_tab"):
             button = self._button(navigation, page, lambda page=page:self.show_page(page))
             button.pack(side="left", padx=(0, 8))
             self.nav_buttons[page] = button
-        self._button(navigation, "compatibility", self.about, style="Link.TButton").pack(side="right")
+        ttk.Button(navigation, textvariable=self.radio_status, command=lambda:self.show_page("radio_tab"),
+                   style="Link.TButton").pack(side="right")
 
         viewport = tk.Frame(self.root, bg=theme.BG)
         viewport.pack(fill="both", expand=True)
@@ -154,9 +165,10 @@ class Application:
         self.root.bind("<MouseWheel>", self._wheel, add="+")
         self.canvas.bind("<Button-4>", lambda event:self.canvas.yview_scroll(-3, "units"))
         self.canvas.bind("<Button-5>", lambda event:self.canvas.yview_scroll(3, "units"))
-        self.pages = {key:tk.Frame(self.outer, bg=theme.BG) for key in ("workspace", "audio_tab")}
+        self.pages = {key:tk.Frame(self.outer, bg=theme.BG) for key in ("workspace", "audio_tab", "radio_tab")}
         self._build_workspace(self.pages["workspace"])
         self._build_audio(self.pages["audio_tab"])
+        self.radio_panel = RadioPanel(self, self.pages["radio_tab"])
         self.show_page("workspace")
 
     def _build_workspace(self, parent):
@@ -230,8 +242,9 @@ class Application:
         compose = tk.Frame(messages.body, bg=theme.PANEL)
         compose.pack(fill="x", pady=(0, 10))
         self._label(compose, "compose").pack(side="left", padx=(0, 10))
-        self._button(compose, "send_text", lambda:self.encode("text", True),
-                     style="Primary.TButton", idle=True).pack(side="right")
+        self.text_send_button = self._button(compose, "send_text", lambda:self.encode("text", True),
+                                              style="Primary.TButton", idle=True)
+        self.text_send_button.pack(side="right")
         self._button(compose, "text_wav", lambda:self.encode("text", False), idle=True).pack(side="right", padx=6)
         self.message = ttk.Entry(compose)
         self.message.pack(side="left", fill="x", expand=True)
@@ -318,6 +331,7 @@ class Application:
         self._image_labels()
         self._set_status(*self._status_message)
         self._set_activity(self.activity)
+        self.radio_panel.refresh_labels()
 
     def _image_labels(self):
         self.tx_caption.configure(text=self.tr("image_ready" if self.tx_image is not None else "no_image"))
@@ -356,6 +370,12 @@ class Application:
         self.bsr_button.state(["!disabled" if idle and self.rx_summary and self.rx_summary["missing"] else "disabled"])
         self.repair_button.state(["!disabled" if idle and self.tx_image is not None and self.requested_blocks else "disabled"])
         self.stop_button.state(["disabled" if idle else "!disabled"])
+        if hasattr(self, "radio_panel"):
+            radio = self.radio_panel
+            if radio.busy or (radio.ptt_method.get() == "hamlib" and (not radio.connected or radio.release_failed)):
+                for button in (self.image_send_button, self.text_send_button):
+                    button.state(["disabled"])
+            radio.sync()
 
     def about(self):
         messagebox.showinfo(self.tr("about_title"), self.tr("about", version=__version__), parent=self.root)
@@ -413,6 +433,8 @@ class Application:
         def run():
             try:
                 work()
+            except PTTReleaseError as exc:
+                self.events.put(("radio_release_error", str(exc)))
             except Exception as exc:
                 if not self.cancelled.is_set():
                     self.events.put(("error", (error_key, str(exc))))
@@ -504,6 +526,17 @@ class Application:
         requested = list(self.requested_blocks)
         device = self.device_ids[self.output_device.get()]
         port, line = self.ptt_port.get().strip(), self.ptt_line.get()
+        transmit_options = {}
+        radio = None
+        if play:
+            try:
+                transmit_options = self.radio_panel.transmit_options()
+                if "ptt" in transmit_options:
+                    radio = self.radio_panel.session
+                    port = ""
+            except ValueError as exc:
+                self._error("radio_config_error", exc)
+                return
         def work():
             if kind in ("image", "repair"):
                 frames = image_frames(image, call, mode=mode, fec=fec, scale_index=index,
@@ -519,7 +552,9 @@ class Application:
                 from .live import play_audio
                 self.events.put(("activity", "tx"))
                 self._post_status("transmitting", seconds=len(audio)/48000)
-                play_audio(audio, device=device, port=port or None, ptt_line=line, cancelled=self.cancelled.is_set)
+                play_audio(audio, device=device, port=port or None, ptt_line=line,
+                           cancelled=lambda:self.cancelled.is_set() or (radio is not None and not radio.connected),
+                           **transmit_options)
                 self._post_status("transmitted")
             else:
                 save_wav(path, audio)
@@ -592,7 +627,11 @@ class Application:
             self.live.stop()
         if self.activity == "tx":
             from .live import stop_playback
-            stop_playback()
+            try:
+                stop_playback()
+            except Exception as exc:
+                # The worker still owns PTT cleanup; never interrupt window shutdown.
+                self.events.put(("error", ("audio_error", str(exc))))
         self._set_activity("stopping")
 
     def _poll(self):
@@ -601,7 +640,9 @@ class Application:
                 event, data = self.events.get_nowait()
                 if event == "done":
                     self.busy = False
-                    if self.cancelled.is_set():
+                    if self.radio_panel.release_failed:
+                        self._set_status("radio_release_error")
+                    elif self.cancelled.is_set():
                         self._set_status("stopped")
                     self._set_activity("idle")
                 elif event == "stopped":
@@ -629,19 +670,28 @@ class Application:
                     pixels, self.rx_summary = data
                     self.rx_image = Image.fromarray(pixels)
                     self._show(self.rx_preview, self.rx_image)
+                elif event.startswith("radio_"):
+                    self.radio_panel.handle(event, data)
         except queue.Empty:
             pass
         self._sync_controls()
         self._poll_after = self.root.after(80, self._poll)
 
     def close(self):
+        if self.closing:
+            return
         self.closing = True
         self.stop()
         self.root.withdraw()
         def wait_for_cleanup():
+            if not self.closing:
+                return
             running = self.worker_thread and self.worker_thread.is_alive()
             listening = self.live and self.live.thread and self.live.thread.is_alive()
-            if running or listening:
+            if running or listening or self.radio_panel.busy:
+                self.root.after(50, wait_for_cleanup)
+            elif self.radio_panel.session:
+                self.radio_panel.begin_shutdown()
                 self.root.after(50, wait_for_cleanup)
             else:
                 self.root.after_cancel(self._poll_after)

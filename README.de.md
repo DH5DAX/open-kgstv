@@ -19,6 +19,8 @@ nicht**; die einzelnen Nachweise stehen in [COMPATIBILITY.md](COMPATIBILITY.md).
 - Deutsch/Englisch direkt umschaltbar, mit gespeicherter Sprachauswahl und
   dunkler Gestaltung nach dem Vorbild von HamRig Portal und HamRig Rotor.
 - Empfangsberichte mit Paketdaten, Fehlerstatus und fehlenden Bildblöcken.
+- Hamlib für USB/CAT und vorhandene rigctld-Server: Frequenz, Betriebsart und
+  CAT-PTT, einschließlich IC-7610-USB-Profil. Robbie als Kopf- und Fenstersymbol.
 
 Sechs öffentlich verfügbare Original-Bildaufnahmen werden mit je **300/300
 CRC-gültigen Bildblöcken** empfangen. Beide Original-Textaufnahmen werden korrekt
@@ -79,6 +81,31 @@ Senden einen laufenden Empfang stoppen. „Bild senden“ und „Text senden“ 
 Audio auf dem gewählten Ausgang aus; ein eingetragener PTT-Port wird dabei
 aktiviert. Ein leerer PTT-Port bedeutet: keine serielle Steuerung.
 
+## IC-7610 per USB und weitere Funkgeräte
+
+Unter Windows x64 lädt `python tools/fetch_hamlib.py` das offizielle Hamlib-Paket
+in den Projektordner und prüft dessen SHA-256. Danach die Oberfläche neu starten.
+Unter **Funkgerät → IC-7610-USB-Profil** den passenden CI-V-COM-Port auswählen,
+Baudrate und Adresse abgleichen (Vorgabe: 115200 und 0x98) und **Verbinden** wählen.
+Unter **Audio & PTT** zusätzlich die USB-Soundkarte des IC-7610 auswählen.
+
+Am IC-7610 für USB-D1 **DATA1 MOD = USB** einstellen. Die vollständige
+[Einrichtungsanleitung](docs/HAMLIB.md) beschreibt die weiteren USB-Menüs,
+andere Modelle, vorhandene Server und das Verhalten bei Verbindungsfehlern.
+
+Frequenz und Betriebsart werden zurückgelesen und nur auf ausdrücklichen Befehl
+gesetzt. Hamlib-CAT-PTT folgt der Audioübertragung einschließlich Stopp und
+Fehlerbehandlung. WAV-Export schaltet kein PTT. Eine unbestätigte PTT-Freigabe
+wird sichtbar gemeldet. Funkgeräteprofile und Sprache werden gespeichert;
+beim Start erfolgt keine automatische Verbindung.
+
+Geprüft mit dem echten Hamlib-Dummy-Backend; **der Test an einem physischen
+IC-7610 einschließlich USB-Audio und HF steht noch aus**.
+
+![Hamlib-Funkgeräteseite mit Robbie und verbundenem Software-Dummy](docs/screenshots/hamlib-radio.jpg)
+
+![Deutsche PTT-Einstellungen im kompakten Fenster](docs/screenshots/hamlib-ptt-de.jpg)
+
 ## Kommandozeile
 
 Aufnahme empfangen; Bilder und `report.json` landen in einem neuen Ordner:
@@ -125,7 +152,8 @@ Der Download ist ausdrücklich, hashgeprüft und umfasst nur öffentliche
 Audio-/Bild-Testdaten. Ohne die Aufnahmen werden die Originalsignal-Tests als
 übersprungen gemeldet. Die Fremddateien unter `research/reference/` sind
 gitignoriert und werden nicht im Python-Paket ausgeliefert.
-Am 6. November 2026 bestanden lokal alle 39 Tests. Die Oberflächentests benötigen
+Am 9. November 2026 bestanden lokal alle 64 Tests, einschließlich Hamlib-Dummy,
+CAT-PTT, Fehlerfällen und gespeicherten Funkgeräteprofilen. Die Oberflächentests benötigen
 Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 
 ## Aufbau
@@ -138,6 +166,7 @@ Tk und einen Bildschirm; ohne grafische Sitzung werden sie übersprungen.
 | `session.py` | Bildaufbau, Rufzeichen, Sender und experimentelles BSR |
 | `audio.py` | Offline-Audio, WAV/MP3 und Abtastratenkonvertierung |
 | `live.py` | Optionale Soundkarte und PTT mit Freigabe im Fehlerfall |
+| `hamlib.py`, `radio_gui.py` | rigctld-Protokoll, Verbindungen, CAT-PTT und Funkgerätesteuerung |
 | `cli.py`, `gui.py` | Kommandozeile und Desktop-Oberfläche |
 | `i18n.py`, `theme.py` | Übersetzungen, Sprachauswahl und Tk-Gestaltung im HamRig-Stil |
 
@@ -153,3 +182,6 @@ Referenzbildern geprüft. JPEG-Standardtabellen werden aus Pillow gewonnen.
 
 Die MIT-Lizenz dieses Projekts umfasst eigenen Code und eigene Dokumentation,
 nicht die separat heruntergeladenen Originalprogramme, Bilder oder Aufnahmen.
+Robbie stammt aus HamRig Portal; die [Herkunftsnotiz](kgstv/assets/README.md)
+beschreibt das separat behandelte Markenmotiv. Hamlib bleibt eine externe
+Abhängigkeit unter seinen eigenen Lizenzen.

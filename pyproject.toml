@@ -24,3 +24,6 @@ kgstv-gui = "kgstv.gui:main"
 
 [tool.setuptools.packages.find]
 include = ["kgstv*"]
+
+[tool.setuptools.package-data]
+kgstv = ["assets/*.png", "assets/*.md"]

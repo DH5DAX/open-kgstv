@@ -19,14 +19,17 @@ hardware tests are still pending.
 - Experimental block repair requests and responses (BSR).
 - A Tk desktop interface with image previews, received text, live audio input,
   explicit audio playback and optional serial RTS/DTR PTT.
+- Hamlib radio control: local USB/CAT or an existing rigctld server, frequency
+  and mode control, CAT PTT, and an IC-7610 USB preset.
 - English/German interface switching without restarting, with a remembered
-  language preference and a dark HamRig-inspired design.
+  language preference, a dark HamRig-inspired design and the Robbie mascot.
 - JSON reception reports with packet details, errors and missing image blocks.
 
 English is the default interface language. Use **EN / DE** at the top right to
 switch immediately. Images, message drafts, device selections and an active
 operation remain intact. **Images & messages** contains the operating controls;
 **Audio & PTT** contains soundcard, receive offset and serial PTT settings.
+**Radio** contains Hamlib connection settings, tuning and CAT PTT.
 
 ## Screenshots
 
@@ -75,6 +78,19 @@ python -m kgstv gui
 On Windows, `start-gui.cmd` can also launch the application when Python 3.13 is
 installed. For WAV-only command-line use, `python -m pip install -e .` is enough.
 
+### IC-7610 USB and other Hamlib radios
+
+On Windows x64, `python tools/fetch_hamlib.py` explicitly downloads and verifies
+Hamlib into this checkout. Restart the GUI, open **Radio → IC-7610 USB profile**,
+select the radio's CI-V COM port and match its baud rate (preset: 115200, CI-V
+0x98). Choose the radio's USB audio input/output under **Audio & PTT**.
+
+See the [complete setup guide](docs/HAMLIB.md) for the IC-7610 menu settings,
+other radios, existing rigctld servers and PTT behavior. CAT control has been
+tested against the real Hamlib Dummy backend; physical radio testing is pending.
+
+![Radio page with Robbie, connected to Hamlib's software Dummy backend](docs/screenshots/hamlib-radio.jpg)
+
 ### Desktop controls
 
 | Label in the application | Action |
@@ -91,18 +107,24 @@ installed. For WAV-only command-line use, `python -m pip install -e .` is enough
 | Error correction | Enable convolutional error correction |
 | Receive offset (Hz) | Correct a known receive frequency offset |
 | Serial port | Serial PTT port; leave blank to disable PTT |
+| Radio → Connect / Disconnect | Open or close the configured CAT connection |
+| Radio → Set frequency / Set mode | Explicitly change radio frequency or mode |
+| Radio → Hamlib CAT PTT | Key the connected radio during audio transmission |
+| Radio → PTT off / RX | Stop playback and request receive |
 | EN / DE | Switch and remember the interface language |
 
 The application opens no audio devices at startup. Stop reception before
 transmitting. Clicking a send button plays audio and activates the configured
-PTT line, if any.
+PTT method, if any. With Hamlib PTT selected, sending requires a connected radio.
+WAV export remains available without a radio connection.
 
 The language preference is stored in `OpenKGSTV/settings.json` under `%APPDATA%`
 on Windows, `~/Library/Application Support` on macOS, or `$XDG_CONFIG_HOME`
-(default `~/.config`) on Linux. No callsign, messages or device settings are
-written to that file. The design follows the charcoal panels, crimson transmit
-actions and restrained status colors of HamRig Portal and HamRig Rotor; it does
-not require either application or bundle their assets.
+(default `~/.config`) on Linux. Saved radio profiles share that file; callsign,
+messages and audio-device selections are not stored. The design follows the
+charcoal panels, crimson transmit actions and restrained status colors of HamRig
+Portal and HamRig Rotor. The original HamRig Robbie artwork appears in the header
+and window icon; see its [provenance note](kgstv/assets/README.md).
 
 ## Command line
 
@@ -156,8 +178,9 @@ behavior has not yet been validated against the running original application.
 | BSR and all compression scales against the original | Pending |
 | Live audio and PTT on radio hardware | Implemented, not hardware-tested |
 
-39 automated tests passed locally on November 6, 2026, including language
-switching, preference persistence and GUI WAV export. The original recordings
+64 automated tests passed locally on November 9, 2026, including Hamlib protocol,
+PTT failure handling, real Hamlib Dummy control, language switching, saved
+profiles and GUI WAV export. The original recordings
 are a small, clean sample set; they do not establish receiver performance under
 fading, multipath, clipping, clock drift or Doppler. Automatic AFC, a waterfall,
 Windows INI compatibility and original image-processor IPC are not implemented.
@@ -189,6 +212,7 @@ and excluded from the Python package.
 | `session.py` | Image assembly, callsigns, transmission and experimental BSR |
 | `audio.py` | Offline WAV/MP3 handling and sample-rate conversion |
 | `live.py` | Optional soundcard and serial PTT support |
+| `hamlib.py`, `radio_gui.py` | rigctld protocol, process lifecycle, CAT PTT and radio controls |
 | `cli.py`, `gui.py` | Command-line and desktop interfaces |
 | `i18n.py`, `theme.py` | English/German translations, preferences and HamRig-inspired Tk styling |
 
@@ -206,4 +230,5 @@ obtained from Pillow.
 
 The MIT license covers this project's own code, documentation and original
 screenshot test card. It does not cover separately downloaded original
-programs, images or recordings.
+programs, images or recordings, or the HamRig branding artwork. Hamlib is an
+external dependency distributed under its own licenses.

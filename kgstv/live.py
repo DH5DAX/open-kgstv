@@ -86,11 +86,25 @@ class LiveReceiver:
             self.callback("stopped", None)
 
 
-def play_audio(samples, *, device=None, port=None, ptt_line="rts", cancelled=None):
+def play_audio(samples, *, device=None, port=None, ptt_line="rts", cancelled=None,
+               ptt=None, lead=0.0, tail=0.0):
     """Explicit user-triggered playback with optional serial PTT release."""
     import sounddevice as sd
     serial_port = None
     playback_started = False
+    ptt_attempted = False
+    if ptt is not None and port:
+        raise ValueError("Choose Hamlib PTT or serial PTT, not both")
+    if not 0 <= lead <= 10 or not 0 <= tail <= 10:
+        raise ValueError("PTT delays must be between 0 and 10 seconds")
+
+    def pause(seconds):
+        deadline = time.monotonic()+seconds
+        while time.monotonic() < deadline:
+            if cancelled and cancelled():
+                return False
+            time.sleep(min(.02, max(0, deadline-time.monotonic())))
+        return not (cancelled and cancelled())
     try:
         if cancelled and cancelled():
             return
@@ -106,6 +120,11 @@ def play_audio(samples, *, device=None, port=None, ptt_line="rts", cancelled=Non
             setattr(serial_port, ptt_line, True)
         if cancelled and cancelled():
             return
+        if ptt is not None:
+            ptt_attempted = True
+            ptt(True)
+        if not pause(lead):
+            return
         playback_started = True
         sd.play(samples, samplerate=48000, device=device)
         while sd.get_stream().active:
@@ -114,16 +133,21 @@ def play_audio(samples, *, device=None, port=None, ptt_line="rts", cancelled=Non
                 break
             time.sleep(.02)
         sd.wait()
+        pause(tail)
     finally:
         try:
             if playback_started:
                 sd.stop()
         finally:
-            if serial_port is not None:
-                try:
-                    setattr(serial_port, ptt_line, False)
-                finally:
-                    serial_port.close()
+            try:
+                if ptt_attempted:
+                    ptt(False)
+            finally:
+                if serial_port is not None:
+                    try:
+                        setattr(serial_port, ptt_line, False)
+                    finally:
+                        serial_port.close()
 
 
 def stop_playback():
