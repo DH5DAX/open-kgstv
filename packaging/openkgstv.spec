@@ -18,6 +18,9 @@ datas += [(str(assets), 'distribution'), (str(root / 'LICENSE'), 'distribution')
 for package in ('numpy', 'scipy', 'Pillow', 'av', 'sounddevice', 'pyserial', 'cffi'):
     datas += copy_metadata(package)
 hidden = collect_submodules('av') + ['serial.tools.list_ports', 'encodings.cp932']
+if sys.platform.startswith('linux'):
+    # Pillow 12 loads this bridge dynamically from its native ImageTk module.
+    hidden.append('PIL._tkinter_finder')
 # Linux sounddevice locates PortAudio with ctypes at runtime; bundle the SONAME
 # explicitly. Windows' sounddevice hook collects its own vendor DLLs.
 binaries = []
