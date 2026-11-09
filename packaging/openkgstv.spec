@@ -33,6 +33,7 @@ if sys.platform.startswith('linux'):
     binaries.append((portaudio, '.'))
 a = Analysis([str(root / 'packaging' / 'entry.py')], pathex=[str(root)],
              binaries=binaries, datas=datas, hiddenimports=hidden,
+             runtime_hooks=[str(root/'packaging/runtime_audio.py')],
              excludes=['pytest', 'matplotlib', 'pandas', 'IPython', 'torch', 'PyQt5', 'PyQt6'],
              noarchive=False)
 pyz = PYZ(a.pure)
